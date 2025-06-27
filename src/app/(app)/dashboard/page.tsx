@@ -12,7 +12,7 @@ import {
   TabsTrigger,
 } from "@/components/ui/tabs"
 import { Button } from "@/components/ui/button"
-import { Activity, BedDouble, BrainCircuit, HeartPulse, Download, PlayCircle, FileText, Mic, Info, Menu } from "lucide-react"
+import { Activity, BedDouble, BrainCircuit, HeartPulse, CalendarDays } from "lucide-react"
 import { OverviewChart } from "./components/overview-chart"
 import { Recommendations } from "./components/recommendations"
 import { UserNav } from "@/components/user-nav"
@@ -26,23 +26,26 @@ export default function DashboardPage() {
             <div className="md:hidden">
                 <SidebarTrigger />
             </div>
-            <h2 className="text-3xl font-bold tracking-tight font-headline">Dashboard</h2>
+            <div>
+                <h2 className="text-3xl font-bold tracking-tight font-headline">Welcome back, Olivia!</h2>
+                <p className="text-muted-foreground">Here's a look at your wellbeing status.</p>
+            </div>
         </div>
         <div className="flex items-center space-x-2">
           <UserNav />
           <Button>
-            <Download className="mr-2 h-4 w-4" />
-            Download Report
+            <CalendarDays className="mr-2 h-4 w-4" />
+            This Month
           </Button>
         </div>
       </div>
       <Tabs defaultValue="overview" className="space-y-4">
         <TabsList>
           <TabsTrigger value="overview">Overview</TabsTrigger>
-          <TabsTrigger value="analytics" disabled>
+          <TabsTrigger value="analytics">
             Analytics
           </TabsTrigger>
-          <TabsTrigger value="reports" disabled>
+          <TabsTrigger value="reports">
             Reports
           </TabsTrigger>
         </TabsList>
@@ -96,7 +99,7 @@ export default function DashboardPage() {
                 <Activity className="h-4 w-4 text-muted-foreground" />
               </CardHeader>
               <CardContent>
-                <div className="text-2xl font-bold">1,230</div>
+                <div className="text-2xl font-bold">+1,230</div>
                 <p className="text-xs text-muted-foreground">
                   +19% from last month
                 </p>
@@ -106,8 +109,7 @@ export default function DashboardPage() {
           <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-7">
             <Card className="col-span-4">
               <CardHeader>
-                <CardTitle className="font-headline">Wellbeing Trends</CardTitle>
-                <CardDescription>Your wellbeing score over the last 6 months.</CardDescription>
+                <CardTitle className="font-headline">Overview</CardTitle>
               </CardHeader>
               <CardContent className="pl-2">
                 <OverviewChart />
@@ -115,7 +117,7 @@ export default function DashboardPage() {
             </Card>
             <Card className="col-span-4 lg:col-span-3">
               <CardHeader>
-                <CardTitle className="font-headline">AI Recommendations</CardTitle>
+                <CardTitle className="font-headline">Recent Recommendations</CardTitle>
                 <CardDescription>
                   Personalized resources to support your journey.
                 </CardDescription>
