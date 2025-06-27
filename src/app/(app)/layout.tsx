@@ -1,4 +1,7 @@
+'use client';
+
 import Link from 'next/link';
+import { usePathname } from 'next/navigation';
 import {
   SidebarProvider,
   Sidebar,
@@ -9,7 +12,6 @@ import {
   SidebarMenuButton,
   SidebarFooter,
   SidebarInset,
-  SidebarTrigger,
 } from '@/components/ui/sidebar';
 import {
   Home,
@@ -23,6 +25,8 @@ import { UserProfile } from '@/components/user-profile';
 import { Separator } from '@/components/ui/separator';
 
 export default function AppLayout({ children }: { children: React.ReactNode }) {
+  const pathname = usePathname();
+
   return (
     <SidebarProvider>
       <Sidebar>
@@ -35,7 +39,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
         <SidebarContent>
           <SidebarMenu>
             <SidebarMenuItem>
-              <SidebarMenuButton asChild tooltip="Dashboard">
+              <SidebarMenuButton asChild tooltip="Dashboard" isActive={pathname.startsWith('/dashboard')}>
                 <Link href="/dashboard">
                   <Home />
                   <span>Dashboard</span>
@@ -43,24 +47,24 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
               </SidebarMenuButton>
             </SidebarMenuItem>
             <SidebarMenuItem>
-              <SidebarMenuButton asChild tooltip="Analytics">
-                <Link href="#">
+              <SidebarMenuButton asChild tooltip="Analytics" isActive={pathname.startsWith('/analytics')}>
+                <Link href="/analytics">
                   <BarChart2 />
                   <span>Analytics</span>
                 </Link>
               </SidebarMenuButton>
             </SidebarMenuItem>
             <SidebarMenuItem>
-              <SidebarMenuButton asChild tooltip="Resources">
-                <Link href="#">
+              <SidebarMenuButton asChild tooltip="Resources" isActive={pathname.startsWith('/resources')}>
+                <Link href="/resources">
                   <BookOpen />
                   <span>Resources</span>
                 </Link>
               </SidebarMenuButton>
             </SidebarMenuItem>
             <SidebarMenuItem>
-              <SidebarMenuButton asChild tooltip="Profile">
-                <Link href="#">
+              <SidebarMenuButton asChild tooltip="Profile" isActive={pathname.startsWith('/profile')}>
+                <Link href="/profile">
                   <User />
                   <span>My Profile</span>
                 </Link>
@@ -71,8 +75,8 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
         <SidebarFooter>
           <SidebarMenu>
             <SidebarMenuItem>
-              <SidebarMenuButton asChild tooltip="Settings">
-                <Link href="#">
+              <SidebarMenuButton asChild tooltip="Settings" isActive={pathname.startsWith('/settings')}>
+                <Link href="/settings">
                   <Settings />
                   <span>Settings</span>
                 </Link>
