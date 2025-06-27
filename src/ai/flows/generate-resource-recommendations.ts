@@ -33,7 +33,7 @@ const GenerateResourceRecommendationsOutputSchema = z.object({
     z.object({
       title: z.string().describe('The title of the recommended resource.'),
       description: z.string().describe('A brief description of the resource.'),
-      link: z.string().url().describe('A URL pointing to the resource.'),
+      link: z.string().describe('A URL pointing to the resource.'),
       type: z
         .enum(['session', 'video', 'article', 'other'])
         .describe('The type of resource.'),
@@ -90,4 +90,3 @@ export async function generateResourceRecommendations(
 ): Promise<GenerateResourceRecommendationsOutput> {
   return generateResourceRecommendationsFlow(input);
 }
-
