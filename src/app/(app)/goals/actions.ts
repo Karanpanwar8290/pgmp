@@ -4,16 +4,17 @@ import { firestore } from '@/lib/firebase/admin';
 import { revalidatePath } from 'next/cache';
 import { GoalSchema } from './types';
 
-// Mock user ID for now
-const MOCK_USER_ID = 'user_123';
 
-export async function addGoal(formData: FormData) {
+export async function addGoal(userId: string, formData: FormData) {
   if (!firestore) {
-    return { error: 'Database not configured. Please set Firebase credentials.' };
+    return { error: 'Database not configured.' };
+  }
+   if (!userId) {
+    return { error: 'You must be logged in to create a goal.' };
   }
 
   const values = {
-    userId: MOCK_USER_ID,
+    userId: userId,
     title: formData.get('title'),
     description: formData.get('description'),
     dueDate: formData.get('dueDate'),
@@ -45,12 +46,16 @@ export async function addGoal(formData: FormData) {
   }
 }
 
-export async function toggleGoal(goalId: string, completed: boolean) {
+export async function toggleGoal(userId: string, goalId: string, completed: boolean) {
     if (!firestore) {
-      return { error: 'Database not configured. Please set Firebase credentials.' };
+      return { error: 'Database not configured.' };
+    }
+    if (!userId) {
+      return { error: 'You must be logged in to update a goal.' };
     }
 
     try {
+        // Optional: you could add a security rule in Firestore to ensure userId matches goal's owner
         await firestore.collection('goals').doc(goalId).update({
             completed: !completed,
         });

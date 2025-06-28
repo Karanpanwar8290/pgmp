@@ -11,20 +11,26 @@ import { toggleGoal } from '../../goals/actions';
 import type { Goal } from '../../goals/types';
 import { useToast } from '@/hooks/use-toast';
 import { useRouter } from 'next/navigation';
+import { useAuth } from '@/components/auth-provider';
 
 export function Goals({ initialGoals }: { initialGoals: Goal[] }) {
+  const { user } = useAuth();
   const [goals, setGoals] = useState(initialGoals);
   const { toast } = useToast();
   const router = useRouter();
   const [isPending, startTransition] = useTransition();
 
   const handleToggleGoal = (id: string, currentStatus: boolean) => {
+    if (!user) {
+        toast({ title: "Error", description: "You must be logged in.", variant: "destructive" });
+        return;
+    }
     startTransition(async () => {
-      const result = await toggleGoal(id, currentStatus);
+      const result = await toggleGoal(user.uid, id, currentStatus);
       if (result.success) {
         const updatedGoals = goals.map(g => g.id === id ? { ...g, completed: result.completed! } : g).filter(g => !g.completed);
         setGoals(updatedGoals);
-        router.refresh(); // Refresh server components
+        router.refresh(); 
 
         if (result.completed) {
             toast({

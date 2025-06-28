@@ -1,23 +1,27 @@
 import admin from 'firebase-admin';
 
-// Initialize Firebase Admin SDK only once
-if (admin.apps.length === 0) {
-  // Check if credentials are provided. If not, Firestore will be unavailable.
-  // This prevents crashing the app and allows for graceful error handling.
-  if (process.env.FIREBASE_PROJECT_ID && process.env.FIREBASE_CLIENT_EMAIL && process.env.FIREBASE_PRIVATE_KEY) {
-    try {
-      admin.initializeApp({
-        credential: admin.credential.cert({
-          projectId: process.env.FIREBASE_PROJECT_ID,
-          clientEmail: process.env.FIREBASE_CLIENT_EMAIL,
-          privateKey: process.env.FIREBASE_PRIVATE_KEY.replace(/\\n/g, '\n'),
-        }),
-      });
-    } catch (error) {
-      console.error('Firebase admin initialization error. Please check your credentials in .env.local', error);
+// This guard prevents re-initialization on hot reloads
+if (!admin.apps.length) {
+  try {
+    // Ensure all required environment variables are present
+    if (
+      !process.env.FIREBASE_PROJECT_ID ||
+      !process.env.FIREBASE_CLIENT_EMAIL ||
+      !process.env.FIREBASE_PRIVATE_KEY
+    ) {
+      throw new Error('Missing Firebase Admin SDK credentials in environment.');
     }
-  } else {
-    console.warn('Firebase credentials are not set in .env.local. Firestore features will be disabled.');
+    
+    admin.initializeApp({
+      credential: admin.credential.cert({
+        projectId: process.env.FIREBASE_PROJECT_ID,
+        clientEmail: process.env.FIREBASE_CLIENT_EMAIL,
+        // The private key from the .env file needs newlines restored
+        privateKey: process.env.FIREBASE_PRIVATE_KEY.replace(/\\n/g, '\n'),
+      }),
+    });
+  } catch (error) {
+    console.error('Firebase admin initialization error. Firestore features will be disabled.', error);
   }
 }
 

@@ -12,7 +12,6 @@ import {
   SidebarMenuButton,
   SidebarFooter,
   SidebarInset,
-  SidebarTrigger,
 } from '@/components/ui/sidebar';
 import {
   Home,
@@ -27,9 +26,11 @@ import { Logo } from '@/components/icons';
 import { UserProfile } from '@/components/user-profile';
 import { Separator } from '@/components/ui/separator';
 import { UserNav } from '@/components/user-nav';
+import { useAuth } from '@/components/auth-provider';
 
 export default function AppLayout({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
+  const { user } = useAuth();
 
   return (
     <SidebarProvider>
@@ -40,7 +41,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
             <span className="text-lg font-semibold font-headline">Wellbeing Navigator</span>
           </div>
           <div className='md:hidden'>
-            <UserNav />
+            <UserNav user={user} />
           </div>
         </SidebarHeader>
         <SidebarContent>
@@ -107,7 +108,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
             </SidebarMenuItem>
           </SidebarMenu>
           <Separator className="my-2" />
-          <UserProfile />
+          <UserProfile user={user} />
         </SidebarFooter>
       </Sidebar>
       <SidebarInset className="flex flex-col h-screen overflow-hidden">

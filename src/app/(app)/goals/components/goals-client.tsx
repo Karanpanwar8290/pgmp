@@ -19,6 +19,8 @@ import { addGoal, toggleGoal } from '../actions';
 import type { Goal } from '../types';
 import { useToast } from '@/hooks/use-toast';
 import dynamic from 'next/dynamic';
+import { useAuth } from '@/components/auth-provider';
+import { useRouter } from 'next/navigation';
 
 const Confetti = dynamic(() => import('react-confetti'), { ssr: false });
 
@@ -78,6 +80,8 @@ function GoalCard({ goal, onToggle }: { goal: Goal; onToggle: (id: string, compl
 
 // The main client component that manages state and interactions
 export default function GoalsClientComponent({ initialGoals }: { initialGoals: Goal[] }) {
+    const { user } = useAuth();
+    const router = useRouter();
     const [goals, setGoals] = useState<Goal[]>(initialGoals);
     const [open, setOpen] = useState(false);
     const [showConfetti, setShowConfetti] = useState(false);
@@ -87,7 +91,11 @@ export default function GoalsClientComponent({ initialGoals }: { initialGoals: G
 
 
     const handleToggleGoal = async (id: string, currentStatus: boolean) => {
-        const result = await toggleGoal(id, currentStatus);
+        if (!user) {
+            toast({ title: "Error", description: "You must be logged in.", variant: "destructive" });
+            return;
+        }
+        const result = await toggleGoal(user.uid, id, currentStatus);
         if (result.success) {
             const updatedGoals = goals.map(g => g.id === id ? { ...g, completed: result.completed! } : g);
             setGoals(updatedGoals);
@@ -110,21 +118,24 @@ export default function GoalsClientComponent({ initialGoals }: { initialGoals: G
     };
     
     const handleAddGoal = (formData: FormData) => {
-        // Set the due date on the form data before submitting
+        if (!user) {
+            toast({ title: "Error", description: "You must be logged in.", variant: "destructive" });
+            return;
+        }
+        
         if (date) {
             formData.set('dueDate', date.toISOString());
         }
 
         startTransition(async () => {
-            const result = await addGoal(formData);
+            const result = await addGoal(user.uid, formData);
             if (result?.success) {
-                // The revalidatePath in the action will refetch goals.
-                // For a smoother UX, we can optimistically update the UI here later.
                 toast({ title: "Goal Created!", description: "Your new goal has been saved." });
                 setOpen(false);
+                // Refresh the page to show the new goal
+                router.refresh();
             } else if (result?.error) {
-                // Handle validation errors from server action
-                const errorMsg = Array.isArray(result.error) ? result.error.join(', ') : 'Please check your input.';
+                const errorMsg = typeof result.error === 'string' ? result.error : 'Please check your input.';
                 toast({ title: "Error", description: errorMsg, variant: "destructive" });
             }
         })
@@ -213,7 +224,7 @@ export default function GoalsClientComponent({ initialGoals }: { initialGoals: G
                         {activeGoals.length > 0 ? (
                             activeGoals.map(goal => <GoalCard key={goal.id} goal={goal} onToggle={handleToggleGoal} />)
                         ) : (
-                           <p className="text-muted-foreground col-span-full">You've completed all your goals! Time to create some new ones.</p>
+                           <p className="text-muted-foreground col-span-full">You have no active goals. Time to create some new ones!</p>
                         )}
                     </div>
                 </div>

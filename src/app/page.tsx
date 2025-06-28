@@ -22,10 +22,10 @@ export default function LandingPage() {
             </nav>
             <div className="flex items-center gap-4">
                 <Button variant="ghost" asChild>
-                    <Link href="/dashboard">Sign In</Link>
+                    <Link href="/login">Sign In</Link>
                 </Button>
                 <Button asChild>
-                    <Link href="/dashboard">Get Started</Link>
+                    <Link href="/signup">Get Started</Link>
                 </Button>
             </div>
         </div>
@@ -43,7 +43,7 @@ export default function LandingPage() {
               </p>
               <div className='flex flex-col sm:flex-row gap-4 justify-center md:justify-start'>
                 <Button size="lg" asChild>
-                  <Link href="/dashboard">Start Your Journey Free</Link>
+                  <Link href="/signup">Start Your Journey Free</Link>
                 </Button>
                 <Button size="lg" variant="outline">
                     Learn More
@@ -154,7 +154,7 @@ export default function LandingPage() {
                  <h2 className="text-3xl md:text-4xl font-bold font-headline">Ready to Take Control of Your Wellbeing?</h2>
                  <p className="text-muted-foreground mt-3 max-w-xl mx-auto">Join thousands of users on their journey to a healthier and happier life. Get started for free, no credit card required.</p>
                  <Button size="lg" className="mt-8" asChild>
-                    <Link href="/dashboard">Start Your Free Trial</Link>
+                    <Link href="/signup">Start Your Free Trial</Link>
                 </Button>
             </div>
         </section>
