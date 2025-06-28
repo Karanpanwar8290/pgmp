@@ -3,10 +3,34 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/com
 import { Button } from "@/components/ui/button";
 import { SidebarTrigger } from "@/components/ui/sidebar";
 import { Progress } from "@/components/ui/progress";
-import { Award, Target, Zap, Trophy } from "lucide-react";
+import { Award, Target, Zap, Trophy, ShieldQuestion } from "lucide-react";
 import Link from "next/link";
+import { firestore } from "@/lib/firebase/admin";
+import type { Goal } from "../goals/types";
 
-export default function ProfilePage() {
+async function getCompletedGoals() {
+    if (!firestore) {
+        return [];
+    }
+    try {
+        const goalsSnapshot = await firestore.collection('goals').where('userId', '==', 'user_123').where('completed', '==', true).get();
+        return goalsSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Goal));
+    } catch (error) {
+        console.error("Failed to fetch completed goals:", error);
+        return [];
+    }
+}
+
+const staticAchievements = [
+    { icon: Award, title: "First Week", description: "Completed 7 days" },
+    { icon: Zap, title: "Active Pro", description: "1000 active mins" },
+    { icon: Award, title: "Mindful Master", description: "20 meditations" },
+];
+
+
+export default async function ProfilePage() {
+  const completedGoals = await getCompletedGoals();
+  
   return (
     <div className="flex-1 space-y-4 p-4 md:p-8 pt-6 overflow-y-auto">
         <div className="flex items-center justify-between space-y-2">
@@ -76,26 +100,27 @@ export default function ProfilePage() {
                     <CardDescription>Milestones you've unlocked on your journey.</CardDescription>
                 </CardHeader>
                 <CardContent className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-                    <div className="flex flex-col items-center text-center p-4 bg-secondary rounded-lg">
-                        <Award className="w-10 h-10 text-primary mb-2"/>
-                        <p className="font-semibold text-sm">First Week</p>
-                        <p className="text-xs text-muted-foreground">Completed 7 days</p>
-                    </div>
-                    <div className="flex flex-col items-center text-center p-4 bg-secondary rounded-lg">
-                        <Zap className="w-10 h-10 text-primary mb-2"/>
-                        <p className="font-semibold text-sm">Active Pro</p>
-                        <p className="text-xs text-muted-foreground">1000 active mins</p>
-                    </div>
-                    <div className="flex flex-col items-center text-center p-4 bg-secondary rounded-lg">
-                        <Award className="w-10 h-10 text-primary mb-2"/>
-                        <p className="font-semibold text-sm">Mindful Master</p>
-                        <p className="text-xs text-muted-foreground">20 meditations</p>
-                    </div>
-                    <div className="flex flex-col items-center text-center p-4 bg-secondary/50 rounded-lg opacity-60">
-                        <Trophy className="w-10 h-10 text-muted-foreground mb-2"/>
-                        <p className="font-semibold text-sm">1-Month Streak</p>
-                        <p className="text-xs text-muted-foreground">Locked</p>
-                    </div>
+                    {completedGoals.map((goal) => (
+                         <div key={goal.id} className="flex flex-col items-center text-center p-4 bg-secondary rounded-lg">
+                            <Trophy className="w-10 h-10 text-primary mb-2"/>
+                            <p className="font-semibold text-sm">{goal.title}</p>
+                            <p className="text-xs text-muted-foreground">Goal Completed!</p>
+                        </div>
+                    ))}
+                    {staticAchievements.map((ach, i) => (
+                        <div key={i} className="flex flex-col items-center text-center p-4 bg-secondary rounded-lg">
+                            <ach.icon className="w-10 h-10 text-primary mb-2"/>
+                            <p className="font-semibold text-sm">{ach.title}</p>
+                            <p className="text-xs text-muted-foreground">{ach.description}</p>
+                        </div>
+                    ))}
+                     {completedGoals.length === 0 && (
+                         <div className="col-span-full flex flex-col items-center text-center p-4 bg-secondary/50 rounded-lg">
+                            <ShieldQuestion className="w-10 h-10 text-muted-foreground mb-2"/>
+                            <p className="font-semibold text-sm">No goals completed yet</p>
+                            <p className="text-xs text-muted-foreground">Complete a goal to see it here!</p>
+                        </div>
+                     )}
                 </CardContent>
             </Card>
         </div>

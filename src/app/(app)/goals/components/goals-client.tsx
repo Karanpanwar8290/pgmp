@@ -83,6 +83,8 @@ export default function GoalsClientComponent({ initialGoals }: { initialGoals: G
     const [showConfetti, setShowConfetti] = useState(false);
     const { toast } = useToast();
     let [isPending, startTransition] = useTransition();
+    const [date, setDate] = React.useState<Date | undefined>(addDays(new Date(), 7));
+
 
     const handleToggleGoal = async (id: string, currentStatus: boolean) => {
         const result = await toggleGoal(id, currentStatus);
@@ -108,6 +110,11 @@ export default function GoalsClientComponent({ initialGoals }: { initialGoals: G
     };
     
     const handleAddGoal = (formData: FormData) => {
+        // Set the due date on the form data before submitting
+        if (date) {
+            formData.set('dueDate', date.toISOString());
+        }
+
         startTransition(async () => {
             const result = await addGoal(formData);
             if (result?.success) {
@@ -164,9 +171,28 @@ export default function GoalsClientComponent({ initialGoals }: { initialGoals: G
                                 </div>
                                 <div className="grid grid-cols-4 items-center gap-4">
                                     <Label htmlFor="date" className="text-right">Due Date</Label>
-                                    <input type="hidden" name="dueDate" value={new Date().toISOString()} />
-                                    {/* This is a simplification. A real app would use a date picker here and update the hidden input */}
-                                    <p className="col-span-3 text-sm text-muted-foreground">Due date will be set to today.</p>
+                                    <Popover>
+                                        <PopoverTrigger asChild>
+                                        <Button
+                                            variant={"outline"}
+                                            className={cn(
+                                            "col-span-3 justify-start text-left font-normal",
+                                            !date && "text-muted-foreground"
+                                            )}
+                                        >
+                                            <CalendarIcon className="mr-2 h-4 w-4" />
+                                            {date ? format(date, "PPP") : <span>Pick a date</span>}
+                                        </Button>
+                                        </PopoverTrigger>
+                                        <PopoverContent className="w-auto p-0">
+                                        <Calendar
+                                            mode="single"
+                                            selected={date}
+                                            onSelect={setDate}
+                                            initialFocus
+                                        />
+                                        </PopoverContent>
+                                    </Popover>
                                 </div>
                             </div>
                             <DialogFooter>

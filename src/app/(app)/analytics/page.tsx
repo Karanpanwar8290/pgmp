@@ -5,7 +5,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { SidebarTrigger } from "@/components/ui/sidebar"
 import { ChartContainer, ChartTooltip, ChartTooltipContent } from "@/components/ui/chart"
 import { useState, useEffect } from "react"
-import { BrainCircuit, Footprints, HeartPulse, Zap } from "lucide-react"
+import { BrainCircuit, Footprints, HeartPulse, Zap, Activity, BedDouble } from "lucide-react"
 
 const chartConfig = {
   stress: { label: "Stress", color: "hsl(var(--chart-1))" },
@@ -93,7 +93,7 @@ const SleepChart = () => {
 
 export default function AnalyticsPage() {
   return (
-    <div className="flex-1 space-y-4 p-4 md:p-8 pt-6">
+    <div className="flex-1 space-y-4 p-4 md:p-8 pt-6 overflow-y-auto">
         <div className="flex items-center justify-between space-y-2">
             <div className="flex items-center gap-2">
                 <div className="md:hidden">
@@ -128,12 +128,12 @@ export default function AnalyticsPage() {
             </Card>
             <Card>
                 <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                    <CardTitle className="text-sm font-medium">Activity Streak</CardTitle>
-                    <Zap className="h-4 w-4 text-muted-foreground" />
+                    <CardTitle className="text-sm font-medium">Avg. Sleep</CardTitle>
+                    <BedDouble className="h-4 w-4 text-muted-foreground" />
                 </CardHeader>
                 <CardContent>
-                    <div className="text-2xl font-bold">12 days</div>
-                    <p className="text-xs text-muted-foreground">Your longest streak yet!</p>
+                    <div className="text-2xl font-bold">7h 23m</div>
+                    <p className="text-xs text-muted-foreground">Avg. last 7 days</p>
                 </CardContent>
             </Card>
             <Card>
@@ -167,12 +167,12 @@ export default function AnalyticsPage() {
                 </CardContent>
             </Card>
         </div>
-        <Card>
+        <Card className="col-span-full">
             <CardHeader>
                 <CardTitle>Activity Breakdown</CardTitle>
                 <CardDescription>A summary of your logged activities this month.</CardDescription>
             </CardHeader>
-            <CardContent>
+            <CardContent className="flex justify-center">
                 <ActivityBreakdownChart />
             </CardContent>
         </Card>

@@ -37,7 +37,8 @@ const GenerateResourceRecommendationsOutputSchema = z.object({
       type: z
         .enum(['session', 'video', 'article', 'news', 'other'])
         .describe('The type of resource.'),
-      imageUrl: z.string().describe('A URL for a relevant placeholder image for the resource, e.g., from https://placehold.co/600x400.png')
+      imageUrl: z.string().describe('A URL for a relevant placeholder image for the resource, e.g., from https://placehold.co/600x400.png'),
+      imageHint: z.string().describe('One or two keywords for a relevant image, like "meditation" or "healthy food".')
     })
   ).describe('A list of at least 12 resources recommended for the user.'),
 });
@@ -55,9 +56,16 @@ const resourceRecommendationPrompt = ai.definePrompt({
 
   Given the following information about the user, generate a list of at least 12 relevant resources that can help them achieve their wellbeing goals. 
   
-  Include a mix of content types: guided audio 'sessions', 'videos', 'articles', and 'news' from reputable health sources like the NHS or WebMD. 
-  
-  For each resource, provide a title, a brief description, a direct link, the resource type, and a relevant placeholder image URL from https://placehold.co/.
+  Include a mix of content types: guided audio 'sessions', 'videos', 'articles', and 'news'.
+  Use real-world, reputable sources like YouTube for videos, and WebMD, Healthline, or the NHS for articles and news.
+
+  For each resource, provide:
+  - A compelling title.
+  - A brief, engaging description.
+  - A direct link to the resource.
+  - The resource type ('session', 'video', 'article', 'news', or 'other').
+  - A relevant placeholder image URL from https://placehold.co/.
+  - An 'imageHint' containing one or two keywords that describe the image (e.g., "meditation yoga" or "healthy food").
 
   User Profile: {{{userProfile}}}
   User Preferences: {{{userPreferences}}}
