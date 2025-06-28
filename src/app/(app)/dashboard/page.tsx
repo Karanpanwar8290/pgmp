@@ -17,8 +17,20 @@ import { OverviewChart } from "./components/overview-chart"
 import { Recommendations } from "./components/recommendations"
 import { UserNav } from "@/components/user-nav"
 import { SidebarTrigger } from "@/components/ui/sidebar"
+import { summarizeWellbeingData } from "@/ai/flows/summarize-wellbeing-data"
 
-export default function DashboardPage() {
+export default async function DashboardPage() {
+
+  const summary = await summarizeWellbeingData({
+    assessments: [{ name: 'Stress', score: 25, maxScore: 100, interpretation: 'Low stress levels reported.' }],
+    demographics: { age: 30, gender: 'Female' },
+    activityLogs: [
+        { type: 'Running', duration: 30, intensity: 'High', timestamp: new Date(Date.now() - 86400000 * 1).toISOString() },
+        { type: 'Yoga', duration: 60, intensity: 'Low', timestamp: new Date(Date.now() - 86400000 * 2).toISOString() },
+        { type: 'Strength Training', duration: 45, intensity: 'Medium', timestamp: new Date(Date.now() - 86400000 * 3).toISOString() }
+    ],
+  });
+
   return (
     <div className="flex-1 space-y-4 p-4 md:p-8 pt-6">
       <div className="flex items-center justify-between space-y-2">
@@ -31,21 +43,21 @@ export default function DashboardPage() {
                 <p className="text-muted-foreground">Here's a look at your wellbeing status.</p>
             </div>
         </div>
-        <div className="flex items-center space-x-2">
-          <UserNav />
+        <div className="hidden items-center space-x-2 md:flex">
           <Button>
             <CalendarDays className="mr-2 h-4 w-4" />
             This Month
           </Button>
+          <UserNav />
         </div>
       </div>
       <Tabs defaultValue="overview" className="space-y-4">
-        <TabsList>
+        <TabsList className="flex-wrap h-auto">
           <TabsTrigger value="overview">Overview</TabsTrigger>
-          <TabsTrigger value="analytics">
+          <TabsTrigger value="analytics" disabled>
             Analytics
           </TabsTrigger>
-          <TabsTrigger value="reports">
+          <TabsTrigger value="reports" disabled>
             Reports
           </TabsTrigger>
         </TabsList>
@@ -59,9 +71,9 @@ export default function DashboardPage() {
                 <HeartPulse className="h-4 w-4 text-muted-foreground" />
               </CardHeader>
               <CardContent>
-                <div className="text-2xl font-bold">82/100</div>
+                <div className="text-2xl font-bold">{summary.wellbeingScore}/100</div>
                 <p className="text-xs text-muted-foreground">
-                  +2.5% from last month
+                  {summary.wellbeingScoreChange} from last month
                 </p>
               </CardContent>
             </Card>
@@ -73,9 +85,9 @@ export default function DashboardPage() {
                 <BedDouble className="h-4 w-4 text-muted-foreground" />
               </CardHeader>
               <CardContent>
-                <div className="text-2xl font-bold">7h 15m</div>
+                <div className="text-2xl font-bold">{summary.sleepQuality}</div>
                 <p className="text-xs text-muted-foreground">
-                  Avg. last 7 days
+                  {summary.sleepQualitySubtext}
                 </p>
               </CardContent>
             </Card>
@@ -85,9 +97,9 @@ export default function DashboardPage() {
                 <BrainCircuit className="h-4 w-4 text-muted-foreground" />
               </CardHeader>
               <CardContent>
-                <div className="text-2xl font-bold">Low</div>
+                <div className="text-2xl font-bold">{summary.stressLevel}</div>
                 <p className="text-xs text-muted-foreground">
-                  -10% from last week
+                  {summary.stressLevelChange} from last week
                 </p>
               </CardContent>
             </Card>
@@ -99,9 +111,9 @@ export default function DashboardPage() {
                 <Activity className="h-4 w-4 text-muted-foreground" />
               </CardHeader>
               <CardContent>
-                <div className="text-2xl font-bold">+1,230</div>
+                <div className="text-2xl font-bold">+{summary.activeMinutes}</div>
                 <p className="text-xs text-muted-foreground">
-                  +19% from last month
+                  {summary.activeMinutesChange} from last month
                 </p>
               </CardContent>
             </Card>
@@ -109,7 +121,8 @@ export default function DashboardPage() {
           <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-7">
             <Card className="col-span-4">
               <CardHeader>
-                <CardTitle className="font-headline">Overview</CardTitle>
+                <CardTitle className="font-headline">Progress Overview</CardTitle>
+                 <CardDescription>Your activity trends for the current month.</CardDescription>
               </CardHeader>
               <CardContent className="pl-2">
                 <OverviewChart />
@@ -117,7 +130,7 @@ export default function DashboardPage() {
             </Card>
             <Card className="col-span-4 lg:col-span-3">
               <CardHeader>
-                <CardTitle className="font-headline">Recent Recommendations</CardTitle>
+                <CardTitle className="font-headline">AI Recommendations</CardTitle>
                 <CardDescription>
                   Personalized resources to support your journey.
                 </CardDescription>

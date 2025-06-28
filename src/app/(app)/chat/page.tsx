@@ -5,9 +5,10 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { SidebarTrigger } from "@/components/ui/sidebar";
-import { SendHorizonal, Bot } from 'lucide-react';
+import { SendHorizonal, Bot, Sparkles } from 'lucide-react';
 import { chat } from '@/ai/flows/chat';
 import { cn } from '@/lib/utils';
+import { ScrollArea } from '@/components/ui/scroll-area';
 
 type Message = {
   role: 'user' | 'model';
@@ -18,10 +19,15 @@ export default function ChatPage() {
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState('');
   const [isLoading, setIsLoading] = useState(false);
-  const messagesEndRef = useRef<HTMLDivElement>(null);
+  const scrollAreaRef = useRef<HTMLDivElement>(null);
 
   const scrollToBottom = () => {
-    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+    if (scrollAreaRef.current) {
+        const viewport = scrollAreaRef.current.querySelector('[data-radix-scroll-area-viewport]');
+        if (viewport) {
+            viewport.scrollTop = viewport.scrollHeight;
+        }
+    }
   };
 
   useEffect(() => {
@@ -57,7 +63,7 @@ export default function ChatPage() {
   };
 
   return (
-    <div className="flex flex-col max-h-screen h-screen">
+    <div className="flex flex-col h-full">
       <header className="flex items-center justify-between p-4 border-b">
         <div className="flex items-center gap-2">
             <div className="md:hidden">
@@ -69,53 +75,56 @@ export default function ChatPage() {
             </div>
         </div>
       </header>
-      <main className="flex-1 overflow-y-auto">
-          <div className="p-4 md:p-6 space-y-6">
-            {messages.length === 0 && (
-                <div className="flex flex-col items-center justify-center h-full text-center text-muted-foreground pt-20">
-                    <Bot size={48} className="mb-4 text-primary" />
-                    <h3 className="text-xl font-semibold">Welcome!</h3>
-                    <p>I'm your AI Wellbeing Coach. Ask me for fitness tips, stress management techniques, or just chat.</p>
-                </div>
-            )}
-            {messages.map((m, i) => (
-              <div key={i} className={cn("flex items-start gap-4", m.role === 'user' ? 'justify-end' : 'justify-start')}>
-                {m.role === 'model' && (
-                  <Avatar className="h-9 w-9 border border-primary">
-                    <div className="h-full w-full flex items-center justify-center bg-primary">
-                      <Bot className="h-5 w-5 text-primary-foreground" />
-                    </div>
-                  </Avatar>
-                )}
-                <div className={cn("max-w-lg rounded-xl px-4 py-3 text-sm", m.role === 'user' ? 'bg-primary text-primary-foreground' : 'bg-secondary text-secondary-foreground')}>
-                  <p className="whitespace-pre-wrap">{m.content}</p>
-                </div>
-                {m.role === 'user' && (
-                  <Avatar className="h-9 w-9">
-                    <AvatarImage src="https://placehold.co/100x100.png" alt="User" data-ai-hint="woman portrait" />
-                    <AvatarFallback>OM</AvatarFallback>
-                  </Avatar>
-                )}
-              </div>
-            ))}
-            {isLoading && (
-              <div className="flex items-start gap-4 justify-start">
-                  <Avatar className="h-9 w-9 border border-primary">
-                    <div className="h-full w-full flex items-center justify-center bg-primary">
-                        <Bot className="h-5 w-5 text-primary-foreground" />
-                    </div>
-                  </Avatar>
-                  <div className="max-w-md rounded-xl px-4 py-3 bg-secondary text-secondary-foreground">
-                    <div className="flex items-center space-x-2">
-                        <span className="h-2 w-2 bg-muted-foreground rounded-full animate-pulse [animation-delay:-0.3s]"></span>
-                        <span className="h-2 w-2 bg-muted-foreground rounded-full animate-pulse [animation-delay:-0.15s]"></span>
-                        <span className="h-2 w-2 bg-muted-foreground rounded-full animate-pulse"></span>
-                    </div>
+      <main className="flex-1 flex flex-col overflow-hidden">
+          <ScrollArea className="flex-1" ref={scrollAreaRef}>
+            <div className="p-4 md:p-6 space-y-6">
+              {messages.length === 0 && (
+                  <div className="flex flex-col items-center justify-center h-full text-center text-muted-foreground pt-20">
+                      <div className="p-4 bg-primary/10 rounded-full mb-4">
+                        <Bot size={48} className="text-primary" />
+                      </div>
+                      <h3 className="text-xl font-semibold">Welcome to your AI Coach!</h3>
+                      <p className="max-w-md mt-2">I'm Wellbot, your friendly guide to better wellbeing. You can ask me for fitness tips, stress management techniques, or just chat about your day. How can I help you today? 😊</p>
                   </div>
-              </div>
-            )}
-            <div ref={messagesEndRef} />
-          </div>
+              )}
+              {messages.map((m, i) => (
+                <div key={i} className={cn("flex items-start gap-4", m.role === 'user' ? 'justify-end' : 'justify-start')}>
+                  {m.role === 'model' && (
+                    <Avatar className="h-9 w-9 border border-primary">
+                      <div className="h-full w-full flex items-center justify-center bg-primary">
+                        <Sparkles className="h-5 w-5 text-primary-foreground" />
+                      </div>
+                    </Avatar>
+                  )}
+                  <div className={cn("max-w-lg rounded-xl px-4 py-3 text-sm", m.role === 'user' ? 'bg-primary text-primary-foreground' : 'bg-secondary text-secondary-foreground')}>
+                    <p className="whitespace-pre-wrap">{m.content}</p>
+                  </div>
+                  {m.role === 'user' && (
+                    <Avatar className="h-9 w-9">
+                      <AvatarImage src="https://placehold.co/100x100.png" alt="User" data-ai-hint="woman portrait" />
+                      <AvatarFallback>OM</AvatarFallback>
+                    </Avatar>
+                  )}
+                </div>
+              ))}
+              {isLoading && (
+                <div className="flex items-start gap-4 justify-start">
+                    <Avatar className="h-9 w-9 border border-primary">
+                      <div className="h-full w-full flex items-center justify-center bg-primary">
+                          <Sparkles className="h-5 w-5 text-primary-foreground" />
+                      </div>
+                    </Avatar>
+                    <div className="max-w-md rounded-xl px-4 py-3 bg-secondary text-secondary-foreground">
+                      <div className="flex items-center space-x-2">
+                          <span className="h-2 w-2 bg-muted-foreground rounded-full animate-pulse [animation-delay:-0.3s]"></span>
+                          <span className="h-2 w-2 bg-muted-foreground rounded-full animate-pulse [animation-delay:-0.15s]"></span>
+                          <span className="h-2 w-2 bg-muted-foreground rounded-full animate-pulse"></span>
+                      </div>
+                    </div>
+                </div>
+              )}
+            </div>
+          </ScrollArea>
       </main>
       <footer className="p-4 border-t bg-background">
         <form onSubmit={handleSubmit} className="flex items-center gap-2">

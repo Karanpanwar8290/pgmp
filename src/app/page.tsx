@@ -2,25 +2,33 @@ import Link from 'next/link';
 import Image from 'next/image';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Rocket, BarChart, HeartPulse } from 'lucide-react';
+import { Rocket, BarChart, HeartPulse, MessageCircle, Bot } from 'lucide-react';
 import { Logo } from '@/components/icons';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 
 export default function LandingPage() {
   return (
     <div className="flex flex-col min-h-screen bg-background text-foreground">
-      <header className="container mx-auto px-4 sm:px-6 lg:px-8 h-20 flex items-center justify-between">
-        <Link href="/" className="flex items-center gap-2">
-          <Logo className="w-8 h-8 text-primary" />
-          <span className="text-xl font-bold font-headline">Wellbeing Navigator</span>
-        </Link>
-        <nav className="flex items-center gap-4">
-          <Button variant="ghost" asChild>
-              <Link href="/dashboard">Sign In</Link>
-          </Button>
-          <Button asChild>
-            <Link href="/dashboard">Get Started</Link>
-          </Button>
-        </nav>
+      <header className="sticky top-0 z-50 w-full border-b border-border/40 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
+        <div className="container mx-auto h-16 flex items-center justify-between px-4 sm:px-6 lg:px-8">
+            <Link href="/" className="flex items-center gap-2">
+                <Logo className="w-8 h-8 text-primary" />
+                <span className="text-xl font-bold font-headline">Wellbeing Navigator</span>
+            </Link>
+            <nav className="hidden md:flex items-center gap-2">
+                <Button variant="ghost">Features</Button>
+                <Button variant="ghost">Pricing</Button>
+                <Button variant="ghost">Contact</Button>
+            </nav>
+            <div className="flex items-center gap-4">
+                <Button variant="ghost" asChild>
+                    <Link href="/dashboard">Sign In</Link>
+                </Button>
+                <Button asChild>
+                    <Link href="/dashboard">Get Started</Link>
+                </Button>
+            </div>
+        </div>
       </header>
 
       <main className="flex-1">
@@ -28,33 +36,40 @@ export default function LandingPage() {
           <div className="grid md:grid-cols-2 gap-12 items-center">
             <div className="text-center md:text-left">
               <h1 className="text-4xl md:text-6xl font-bold font-headline tracking-tighter mb-4">
-                Your Personal AI-Powered Wellbeing Companion
+                Navigate Your Journey to Better Health
               </h1>
               <p className="max-w-xl mx-auto md:mx-0 text-lg md:text-xl text-muted-foreground mb-8">
-                Unlock a healthier, happier you. Our intelligent platform analyzes your wellbeing data to provide personalized insights and actionable recommendations.
+                Unlock a healthier, happier you with our AI-powered companion. We analyze your wellbeing data to provide personalized insights and actionable recommendations.
               </p>
-              <Button size="lg" asChild>
-                <Link href="/dashboard">Start Your Journey Free</Link>
-              </Button>
+              <div className='flex flex-col sm:flex-row gap-4 justify-center md:justify-start'>
+                <Button size="lg" asChild>
+                  <Link href="/dashboard">Start Your Journey Free</Link>
+                </Button>
+                <Button size="lg" variant="outline">
+                    Learn More
+                </Button>
+              </div>
             </div>
-            <div className="flex items-center justify-center">
+            <div className="relative flex items-center justify-center">
+              <div className="absolute -inset-2 bg-primary/10 rounded-full blur-3xl"></div>
               <Image
                 src="https://placehold.co/600x400.png"
                 alt="Wellbeing dashboard illustration"
                 width={600}
                 height={400}
-                className="rounded-xl shadow-2xl"
+                className="rounded-xl shadow-2xl relative"
                 data-ai-hint="data abstract"
               />
             </div>
           </div>
         </section>
 
-        <section className="bg-secondary/50 py-20">
+        <section id="features" className="bg-secondary/50 py-20 md:py-28">
           <div className="container mx-auto px-4 sm:px-6 lg:px-8">
             <div className="text-center mb-12">
-                <h2 className="text-3xl font-bold font-headline">A New Era of Personal Wellness</h2>
-                <p className="text-muted-foreground mt-2">Go beyond tracking. Start understanding.</p>
+                <p className="text-primary font-semibold">FEATURES</p>
+                <h2 className="text-3xl md:text-4xl font-bold font-headline mt-2">A New Era of Personal Wellness</h2>
+                <p className="text-muted-foreground mt-2 max-w-2xl mx-auto">Go beyond simple tracking. Understand your body and mind with our intelligent platform.</p>
             </div>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
               <Card>
@@ -74,13 +89,13 @@ export default function LandingPage() {
                 <CardHeader>
                   <CardTitle className="flex items-center gap-3 font-headline">
                     <div className="flex items-center justify-center w-10 h-10 rounded-full bg-primary/10 text-primary">
-                        <BarChart className="w-6 h-6" />
+                        <MessageCircle className="w-6 h-6" />
                     </div>
-                    Actionable Insights
+                    AI-Powered Coaching
                   </CardTitle>
                 </CardHeader>
                 <CardContent>
-                  Interactive charts and graphs provide a clear overview of your progress, helping you stay motivated and informed.
+                  Chat with your personal AI coach anytime. Get instant advice, motivation, and support on your wellness journey.
                 </CardContent>
               </Card>
               <Card>
@@ -99,10 +114,60 @@ export default function LandingPage() {
             </div>
           </div>
         </section>
+
+         <section className="py-20 md:py-28">
+            <div className="container mx-auto px-4 sm:px-6 lg:px-8">
+                <div className="text-center mb-12">
+                    <h2 className="text-3xl md:text-4xl font-bold font-headline">Loved by Users Worldwide</h2>
+                    <p className="text-muted-foreground mt-2">Don't just take our word for it. Here's what our users are saying.</p>
+                </div>
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                    {[
+                        { name: "Sarah J.", role: "Designer", avatar: "woman portrait", hint: "woman portrait", quote: "This app has been a game-changer for my mental health. The AI coach is surprisingly empathetic and gives great advice!" },
+                        { name: "Mike R.", role: "Developer", avatar: "man portrait", hint: "man portrait", quote: "As someone who sits all day, the personalized activity recommendations have been a lifesaver. Finally building a consistent routine." },
+                        { name: "Chen W.", role: "Student", avatar: "person portrait", hint: "person portrait", quote: "I love how it analyzes my sleep data and gives me actionable tips. I'm feeling more rested than ever before." },
+                    ].map(t => (
+                        <Card key={t.name} className="flex flex-col justify-between">
+                            <CardContent className="pt-6">
+                                <p className="text-muted-foreground">"{t.quote}"</p>
+                            </CardContent>
+                            <CardHeader>
+                                <div className="flex items-center gap-4">
+                                    <Avatar>
+                                        <AvatarImage src={`https://placehold.co/100x100.png`} data-ai-hint={t.hint} />
+                                        <AvatarFallback>{t.name.split(' ').map(n => n[0]).join('')}</AvatarFallback>
+                                    </Avatar>
+                                    <div>
+                                        <CardTitle className="text-base">{t.name}</CardTitle>
+                                        <p className="text-sm text-muted-foreground">{t.role}</p>
+                                    </div>
+                                </div>
+                            </CardHeader>
+                        </Card>
+                    ))}
+                </div>
+            </div>
+        </section>
+
+        <section className="bg-secondary/50">
+            <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-20 text-center">
+                 <h2 className="text-3xl md:text-4xl font-bold font-headline">Ready to Take Control of Your Wellbeing?</h2>
+                 <p className="text-muted-foreground mt-3 max-w-xl mx-auto">Join thousands of users on their journey to a healthier and happier life. Get started for free, no credit card required.</p>
+                 <Button size="lg" className="mt-8" asChild>
+                    <Link href="/dashboard">Start Your Free Trial</Link>
+                </Button>
+            </div>
+        </section>
       </main>
 
-      <footer className="container mx-auto px-4 sm:px-6 lg:px-8 py-6 text-center text-muted-foreground">
-        <p>&copy; {new Date().getFullYear()} Wellbeing Navigator. A Final Year Project.</p>
+      <footer className="container mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <div className="flex flex-col md:flex-row justify-between items-center gap-4">
+            <p className="text-sm text-muted-foreground">&copy; {new Date().getFullYear()} Wellbeing Navigator. A Final Year Project.</p>
+            <div className="flex gap-4">
+                <Link href="#" className="text-sm text-muted-foreground hover:text-foreground">Terms of Service</Link>
+                <Link href="#" className="text-sm text-muted-foreground hover:text-foreground">Privacy Policy</Link>
+            </div>
+        </div>
       </footer>
     </div>
   );

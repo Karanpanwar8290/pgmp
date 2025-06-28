@@ -12,6 +12,7 @@ import {
   SidebarMenuButton,
   SidebarFooter,
   SidebarInset,
+  SidebarTrigger,
 } from '@/components/ui/sidebar';
 import {
   Home,
@@ -24,6 +25,7 @@ import {
 import { Logo } from '@/components/icons';
 import { UserProfile } from '@/components/user-profile';
 import { Separator } from '@/components/ui/separator';
+import { UserNav } from '@/components/user-nav';
 
 export default function AppLayout({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
@@ -31,16 +33,19 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
   return (
     <SidebarProvider>
       <Sidebar>
-        <SidebarHeader>
+        <SidebarHeader className="flex items-center justify-between">
           <div className="flex items-center gap-2">
             <Logo className="w-6 h-6 text-primary" />
             <span className="text-lg font-semibold font-headline">Wellbeing Navigator</span>
+          </div>
+          <div className='md:hidden'>
+            <UserNav />
           </div>
         </SidebarHeader>
         <SidebarContent>
           <SidebarMenu>
             <SidebarMenuItem>
-              <SidebarMenuButton asChild tooltip="Dashboard" isActive={pathname.startsWith('/dashboard')}>
+              <SidebarMenuButton asChild tooltip="Dashboard" isActive={pathname === '/dashboard'}>
                 <Link href="/dashboard">
                   <Home />
                   <span>Dashboard</span>
@@ -48,7 +53,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
               </SidebarMenuButton>
             </SidebarMenuItem>
             <SidebarMenuItem>
-              <SidebarMenuButton asChild tooltip="AI Coach" isActive={pathname.startsWith('/chat')}>
+              <SidebarMenuButton asChild tooltip="AI Coach" isActive={pathname === '/chat'}>
                 <Link href="/chat">
                   <MessageCircle />
                   <span>AI Coach</span>
@@ -56,7 +61,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
               </SidebarMenuButton>
             </SidebarMenuItem>
             <SidebarMenuItem>
-              <SidebarMenuButton asChild tooltip="Analytics" isActive={pathname.startsWith('/analytics')}>
+              <SidebarMenuButton asChild tooltip="Analytics" isActive={pathname === '/analytics'}>
                 <Link href="/analytics">
                   <BarChart2 />
                   <span>Analytics</span>
@@ -64,7 +69,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
               </SidebarMenuButton>
             </SidebarMenuItem>
             <SidebarMenuItem>
-              <SidebarMenuButton asChild tooltip="Resources" isActive={pathname.startsWith('/resources')}>
+              <SidebarMenuButton asChild tooltip="Resources" isActive={pathname === '/resources'}>
                 <Link href="/resources">
                   <BookOpen />
                   <span>Resources</span>
@@ -72,7 +77,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
               </SidebarMenuButton>
             </SidebarMenuItem>
             <SidebarMenuItem>
-              <SidebarMenuButton asChild tooltip="Profile" isActive={pathname.startsWith('/profile')}>
+              <SidebarMenuButton asChild tooltip="Profile" isActive={pathname === '/profile'}>
                 <Link href="/profile">
                   <User />
                   <span>My Profile</span>
@@ -84,7 +89,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
         <SidebarFooter>
           <SidebarMenu>
             <SidebarMenuItem>
-              <SidebarMenuButton asChild tooltip="Settings" isActive={pathname.startsWith('/settings')}>
+              <SidebarMenuButton asChild tooltip="Settings" isActive={pathname === '/settings'}>
                 <Link href="/settings">
                   <Settings />
                   <span>Settings</span>
@@ -96,7 +101,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
           <UserProfile />
         </SidebarFooter>
       </Sidebar>
-      <SidebarInset>
+      <SidebarInset className="flex flex-col h-screen overflow-hidden">
         {children}
       </SidebarInset>
     </SidebarProvider>
