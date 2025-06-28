@@ -7,7 +7,8 @@ import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import Link from 'next/link';
 import { Target } from 'lucide-react';
-import { toggleGoal, type Goal } from '../../goals/actions';
+import { toggleGoal } from '../../goals/actions';
+import type { Goal } from '../../goals/types';
 import { useToast } from '@/hooks/use-toast';
 import { useRouter } from 'next/navigation';
 

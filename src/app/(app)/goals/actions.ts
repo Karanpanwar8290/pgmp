@@ -2,19 +2,7 @@
 
 import { firestore } from '@/lib/firebase/admin';
 import { revalidatePath } from 'next/cache';
-import { z } from 'zod';
-
-const GoalSchema = z.object({
-  id: z.string().optional(),
-  userId: z.string(),
-  title: z.string().min(1, 'Title is required'),
-  description: z.string().optional(),
-  dueDate: z.coerce.date(),
-  completed: z.boolean().default(false),
-  createdAt: z.any().optional(),
-});
-
-export type Goal = z.infer<typeof GoalSchema>;
+import { GoalSchema } from './types';
 
 // Mock user ID for now
 const MOCK_USER_ID = 'user_123';

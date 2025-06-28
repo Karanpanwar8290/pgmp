@@ -19,7 +19,7 @@ import { UserNav } from "@/components/user-nav"
 import { SidebarTrigger } from "@/components/ui/sidebar"
 import { summarizeWellbeingData } from "@/ai/flows/summarize-wellbeing-data"
 import { firestore } from '@/lib/firebase/admin';
-import { Goal } from "../goals/actions"
+import type { Goal } from "../goals/types"
 
 export default async function DashboardPage() {
 
