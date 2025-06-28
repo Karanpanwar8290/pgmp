@@ -19,6 +19,7 @@ import {
   BookOpen,
   Settings,
   BarChart2,
+  MessageCircle,
 } from 'lucide-react';
 import { Logo } from '@/components/icons';
 import { UserProfile } from '@/components/user-profile';
@@ -43,6 +44,14 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
                 <Link href="/dashboard">
                   <Home />
                   <span>Dashboard</span>
+                </Link>
+              </SidebarMenuButton>
+            </SidebarMenuItem>
+            <SidebarMenuItem>
+              <SidebarMenuButton asChild tooltip="AI Coach" isActive={pathname.startsWith('/chat')}>
+                <Link href="/chat">
+                  <MessageCircle />
+                  <span>AI Coach</span>
                 </Link>
               </SidebarMenuButton>
             </SidebarMenuItem>
