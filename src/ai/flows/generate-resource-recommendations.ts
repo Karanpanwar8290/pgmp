@@ -33,11 +33,11 @@ const GenerateResourceRecommendationsOutputSchema = z.object({
     z.object({
       title: z.string().describe('The title of the recommended resource.'),
       description: z.string().describe('A brief description of the resource.'),
-      link: z.string().url().describe('A URL pointing to the resource.'),
+      link: z.string().describe('A URL pointing to the resource.'),
       type: z
         .enum(['session', 'video', 'article', 'news', 'other'])
         .describe('The type of resource.'),
-      imageUrl: z.string().url().describe('A URL for a relevant placeholder image for the resource, e.g., from https://placehold.co/600x400.png')
+      imageUrl: z.string().describe('A URL for a relevant placeholder image for the resource, e.g., from https://placehold.co/600x400.png')
     })
   ).describe('A list of at least 12 resources recommended for the user.'),
 });
