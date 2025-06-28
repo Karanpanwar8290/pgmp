@@ -20,6 +20,10 @@ export type Goal = z.infer<typeof GoalSchema>;
 const MOCK_USER_ID = 'user_123';
 
 export async function addGoal(formData: FormData) {
+  if (!firestore) {
+    return { error: 'Database not configured. Please set Firebase credentials.' };
+  }
+
   const values = {
     userId: MOCK_USER_ID,
     title: formData.get('title'),
@@ -54,6 +58,10 @@ export async function addGoal(formData: FormData) {
 }
 
 export async function toggleGoal(goalId: string, completed: boolean) {
+    if (!firestore) {
+      return { error: 'Database not configured. Please set Firebase credentials.' };
+    }
+
     try {
         await firestore.collection('goals').doc(goalId).update({
             completed: !completed,

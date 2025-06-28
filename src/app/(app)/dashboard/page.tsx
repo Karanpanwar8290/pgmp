@@ -33,16 +33,24 @@ export default async function DashboardPage() {
     ],
   });
 
-  const goalsSnapshot = await firestore.collection('goals').where('userId', '==', 'user_123').where('completed', '==', false).orderBy('createdAt', 'desc').get();
-  const initialGoals = goalsSnapshot.docs.map(doc => {
-      const data = doc.data();
-      return {
-          id: doc.id,
-          ...data,
-          dueDate: data.dueDate.toDate(),
-          createdAt: data.createdAt.toDate(),
-      } as Goal;
-  });
+  let initialGoals: Goal[] = [];
+  if (firestore) {
+    try {
+        const goalsSnapshot = await firestore.collection('goals').where('userId', '==', 'user_123').where('completed', '==', false).orderBy('createdAt', 'desc').get();
+        initialGoals = goalsSnapshot.docs.map(doc => {
+            const data = doc.data();
+            return {
+                id: doc.id,
+                ...data,
+                dueDate: data.dueDate.toDate(),
+                createdAt: data.createdAt.toDate(),
+            } as Goal;
+        });
+    } catch (error) {
+        console.error("Failed to fetch goals:", error);
+        // Keep initialGoals as empty array on error
+    }
+  }
 
 
   return (
