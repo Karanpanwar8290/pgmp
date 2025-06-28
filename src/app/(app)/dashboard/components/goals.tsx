@@ -1,25 +1,44 @@
 // src/app/(app)/dashboard/components/goals.tsx
 'use client'
 
-import React, { useState } from 'react';
+import React, { useState, useTransition } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import Link from 'next/link';
 import { Target } from 'lucide-react';
+import { toggleGoal, type Goal } from '../../goals/actions';
+import { useToast } from '@/hooks/use-toast';
+import { useRouter } from 'next/navigation';
 
-const initialGoals = [
-  { id: 1, title: "Meditate 3 times a week", completed: true },
-  { id: 2, title: "Run 5km", completed: false },
-  { id: 3, title: "Read for 15 minutes before bed", completed: false },
-  { id: 4, title: "Drink 8 glasses of water daily", completed: true },
-];
-
-export function Goals() {
+export function Goals({ initialGoals }: { initialGoals: Goal[] }) {
   const [goals, setGoals] = useState(initialGoals);
+  const { toast } = useToast();
+  const router = useRouter();
+  const [isPending, startTransition] = useTransition();
 
-  const toggleGoal = (id: number) => {
-    setGoals(goals.map(goal => goal.id === id ? { ...goal, completed: !goal.completed } : goal));
+  const handleToggleGoal = (id: string, currentStatus: boolean) => {
+    startTransition(async () => {
+      const result = await toggleGoal(id, currentStatus);
+      if (result.success) {
+        const updatedGoals = goals.map(g => g.id === id ? { ...g, completed: result.completed! } : g).filter(g => !g.completed);
+        setGoals(updatedGoals);
+        router.refresh(); // Refresh server components
+
+        if (result.completed) {
+            toast({
+                title: "Goal Achieved! 🎉",
+                description: "Great job! It's now moved to your completed list.",
+            });
+        }
+      } else {
+        toast({
+            title: "Uh oh!",
+            description: result.error,
+            variant: 'destructive'
+        });
+      }
+    });
   };
 
   const activeGoals = goals.filter(goal => !goal.completed).slice(0, 3);
@@ -39,13 +58,14 @@ export function Goals() {
             activeGoals.map((goal) => (
               <div key={goal.id} className="flex items-center space-x-3 p-2 rounded-md hover:bg-secondary/50">
                 <Checkbox
-                  id={`goal-${goal.id}`}
+                  id={`goal-dashboard-${goal.id}`}
                   checked={goal.completed}
-                  onCheckedChange={() => toggleGoal(goal.id)}
+                  onCheckedChange={() => handleToggleGoal(goal.id!, goal.completed)}
+                  disabled={isPending}
                   aria-label={`Mark goal '${goal.title}' as ${goal.completed ? 'incomplete' : 'complete'}`}
                 />
                 <label
-                  htmlFor={`goal-${goal.id}`}
+                  htmlFor={`goal-dashboard-${goal.id}`}
                   className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
                 >
                   {goal.title}

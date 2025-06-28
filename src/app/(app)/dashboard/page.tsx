@@ -18,6 +18,8 @@ import { Recommendations } from "./components/recommendations"
 import { UserNav } from "@/components/user-nav"
 import { SidebarTrigger } from "@/components/ui/sidebar"
 import { summarizeWellbeingData } from "@/ai/flows/summarize-wellbeing-data"
+import { firestore } from '@/lib/firebase/admin';
+import { Goal } from "../goals/actions"
 
 export default async function DashboardPage() {
 
@@ -30,6 +32,18 @@ export default async function DashboardPage() {
         { type: 'Strength Training', duration: 45, intensity: 'Medium', timestamp: new Date(Date.now() - 86400000 * 3).toISOString() }
     ],
   });
+
+  const goalsSnapshot = await firestore.collection('goals').where('userId', '==', 'user_123').where('completed', '==', false).orderBy('createdAt', 'desc').get();
+  const initialGoals = goalsSnapshot.docs.map(doc => {
+      const data = doc.data();
+      return {
+          id: doc.id,
+          ...data,
+          dueDate: data.dueDate.toDate(),
+          createdAt: data.createdAt.toDate(),
+      } as Goal;
+  });
+
 
   return (
     <div className="flex-1 space-y-4 p-4 md:p-8 pt-6">
@@ -119,7 +133,7 @@ export default async function DashboardPage() {
             </Card>
           </div>
           <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-7">
-            <Goals />
+            <Goals initialGoals={initialGoals} />
             <Card className="col-span-full lg:col-span-3">
               <CardHeader>
                 <CardTitle className="font-headline">AI Recommendations</CardTitle>

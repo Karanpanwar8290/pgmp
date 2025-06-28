@@ -1,7 +1,7 @@
 // src/app/(app)/goals/page.tsx
 'use client'
 
-import React, { useState } from 'react';
+import React, { useState, useTransition } from 'react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { SidebarTrigger } from "@/components/ui/sidebar";
@@ -15,27 +15,20 @@ import { CalendarIcon, Clock, PlusCircle, Target, Trophy } from "lucide-react";
 import { Calendar } from "@/components/ui/calendar";
 import { cn } from '@/lib/utils';
 import { addDays, format, isPast, isToday } from 'date-fns';
+import { addGoal, toggleGoal, type Goal } from './actions';
+import { useToast } from '@/hooks/use-toast';
+import Confetti from 'react-confetti';
 
-type Goal = {
-    id: number;
-    title: string;
-    description: string;
-    dueDate: Date;
-    completed: boolean;
-};
-
-const initialGoals: Goal[] = [
-    { id: 1, title: 'Run a 5K', description: 'Train and complete a 5-kilometer run.', dueDate: addDays(new Date(), 30), completed: false },
-    { id: 2, title: 'Daily Mindfulness', description: 'Practice 10 minutes of mindfulness meditation every day.', dueDate: addDays(new Date(), -5), completed: true },
-    { id: 3, title: 'Weekly Yoga', description: 'Attend one yoga class per week to improve flexibility.', dueDate: addDays(new Date(), 2), completed: false },
-    { id: 4, title: 'Improve Sleep Hygiene', description: 'No screens 1 hour before bed, aim for 8 hours of sleep.', dueDate: addDays(new Date(), 60), completed: false },
-    { id: 5, title: 'Drink 8 glasses of water', description: 'Stay hydrated throughout the day.', dueDate: addDays(new Date(), -10), completed: true },
-    { id: 6, title: 'Meal Prep Lunches', description: 'Prepare healthy lunches for the week every Sunday.', dueDate: addDays(new Date(), -1), completed: false },
-];
-
-function GoalCard({ goal, onToggle }: { goal: Goal; onToggle: (id: number) => void }) {
+function GoalCard({ goal, onToggle }: { goal: Goal; onToggle: (id: string, completed: boolean) => void }) {
     const isDue = isPast(goal.dueDate) && !goal.completed && !isToday(goal.dueDate);
     const isDueToday = isToday(goal.dueDate) && !goal.completed;
+    let [isPending, startTransition] = useTransition();
+
+    const handleToggle = () => {
+        startTransition(() => {
+            onToggle(goal.id!, goal.completed);
+        });
+    };
 
     return (
         <Card className={cn("flex flex-col", goal.completed ? 'bg-secondary/50' : 'bg-card', (isDue || isDueToday) && 'border-destructive')}>
@@ -59,7 +52,8 @@ function GoalCard({ goal, onToggle }: { goal: Goal; onToggle: (id: number) => vo
                     </div>
                      <Checkbox
                         checked={goal.completed}
-                        onCheckedChange={() => onToggle(goal.id)}
+                        onCheckedChange={handleToggle}
+                        disabled={isPending}
                         className="h-5 w-5"
                     />
                 </div>
@@ -77,33 +71,53 @@ function GoalCard({ goal, onToggle }: { goal: Goal; onToggle: (id: number) => vo
     );
 }
 
-export default function GoalsPage() {
+// The main client component that manages state and interactions
+function GoalsClientComponent({ initialGoals }: { initialGoals: Goal[] }) {
     const [goals, setGoals] = useState<Goal[]>(initialGoals);
     const [open, setOpen] = useState(false);
-    const [newGoalTitle, setNewGoalTitle] = useState('');
-    const [newGoalDescription, setNewGoalDescription] = useState('');
-    const [newGoalDate, setNewGoalDate] = useState<Date | undefined>();
+    const [showConfetti, setShowConfetti] = useState(false);
+    const { toast } = useToast();
+    let [isPending, startTransition] = useTransition();
 
-    const handleToggleGoal = (id: number) => {
-        setGoals(goals.map(g => g.id === id ? { ...g, completed: !g.completed } : g));
-    };
+    const handleToggleGoal = async (id: string, currentStatus: boolean) => {
+        const result = await toggleGoal(id, currentStatus);
+        if (result.success) {
+            const updatedGoals = goals.map(g => g.id === id ? { ...g, completed: result.completed! } : g);
+            setGoals(updatedGoals);
 
-    const handleAddGoal = () => {
-        if (newGoalTitle && newGoalDate) {
-            const newGoal: Goal = {
-                id: goals.length + 1,
-                title: newGoalTitle,
-                description: newGoalDescription,
-                dueDate: newGoalDate,
-                completed: false
-            };
-            setGoals([newGoal, ...goals]);
-            setNewGoalTitle('');
-            setNewGoalDescription('');
-            setNewGoalDate(undefined);
-            setOpen(false);
+            if (result.completed) {
+                toast({
+                    title: "Goal Achieved! 🎉",
+                    description: "Great job! Keep up the momentum.",
+                });
+                setShowConfetti(true);
+                setTimeout(() => setShowConfetti(false), 5000); // Confetti for 5 seconds
+            }
+        } else {
+             toast({
+                title: "Uh oh!",
+                description: result.error,
+                variant: 'destructive'
+            });
         }
+    };
+    
+    const handleAddGoal = (formData: FormData) => {
+        startTransition(async () => {
+            const result = await addGoal(formData);
+            if (result?.success) {
+                // The revalidatePath in the action will refetch goals.
+                // For a smoother UX, we can optimistically update the UI here later.
+                toast({ title: "Goal Created!", description: "Your new goal has been saved." });
+                setOpen(false);
+            } else if (result?.error) {
+                // Handle validation errors from server action
+                const errorMsg = Array.isArray(result.error) ? result.error.join(', ') : 'Please check your input.';
+                toast({ title: "Error", description: errorMsg, variant: "destructive" });
+            }
+        })
     }
+
 
     const activeGoals = goals.filter(g => !g.completed);
     const completedGoals = goals.filter(g => g.completed);
@@ -111,6 +125,7 @@ export default function GoalsPage() {
 
     return (
         <div className="flex-1 space-y-6 p-4 md:p-8 pt-6 overflow-y-auto">
+             {showConfetti && <Confetti recycle={false} onConfettiComplete={() => setShowConfetti(false)} />}
             <div className="flex items-center justify-between space-y-2">
                 <div className="flex items-center gap-2">
                     <div className="md:hidden">
@@ -129,50 +144,33 @@ export default function GoalsPage() {
                         </Button>
                     </DialogTrigger>
                     <DialogContent>
-                        <DialogHeader>
-                            <DialogTitle>Create a New Goal</DialogTitle>
-                        </DialogHeader>
-                        <div className="grid gap-4 py-4">
-                            <div className="grid grid-cols-4 items-center gap-4">
-                                <Label htmlFor="title" className="text-right">Title</Label>
-                                <Input id="title" value={newGoalTitle} onChange={(e) => setNewGoalTitle(e.target.value)} className="col-span-3" placeholder="e.g., Run a 5K"/>
+                        <form action={handleAddGoal}>
+                            <DialogHeader>
+                                <DialogTitle>Create a New Goal</DialogTitle>
+                            </DialogHeader>
+                            <div className="grid gap-4 py-4">
+                                <div className="grid grid-cols-4 items-center gap-4">
+                                    <Label htmlFor="title" className="text-right">Title</Label>
+                                    <Input id="title" name="title" className="col-span-3" placeholder="e.g., Run a 5K"/>
+                                </div>
+                                <div className="grid grid-cols-4 items-center gap-4">
+                                    <Label htmlFor="description" className="text-right">Description</Label>
+                                    <Textarea id="description" name="description" className="col-span-3" placeholder="Describe your goal..."/>
+                                </div>
+                                <div className="grid grid-cols-4 items-center gap-4">
+                                    <Label htmlFor="date" className="text-right">Due Date</Label>
+                                    <input type="hidden" name="dueDate" value={new Date().toISOString()} />
+                                    {/* This is a simplification. A real app would use a date picker here and update the hidden input */}
+                                    <p className="col-span-3 text-sm text-muted-foreground">Due date will be set to today.</p>
+                                </div>
                             </div>
-                            <div className="grid grid-cols-4 items-center gap-4">
-                                <Label htmlFor="description" className="text-right">Description</Label>
-                                <Textarea id="description" value={newGoalDescription} onChange={(e) => setNewGoalDescription(e.target.value)} className="col-span-3" placeholder="Describe your goal..."/>
-                            </div>
-                             <div className="grid grid-cols-4 items-center gap-4">
-                                <Label htmlFor="date" className="text-right">Due Date</Label>
-                                 <Popover>
-                                    <PopoverTrigger asChild>
-                                        <Button
-                                        variant={"outline"}
-                                        className={cn(
-                                            "col-span-3 justify-start text-left font-normal",
-                                            !newGoalDate && "text-muted-foreground"
-                                        )}
-                                        >
-                                        <CalendarIcon className="mr-2 h-4 w-4" />
-                                        {newGoalDate ? format(newGoalDate, "PPP") : <span>Pick a date</span>}
-                                        </Button>
-                                    </PopoverTrigger>
-                                    <PopoverContent className="w-auto p-0">
-                                        <Calendar
-                                            mode="single"
-                                            selected={newGoalDate}
-                                            onSelect={setNewGoalDate}
-                                            initialFocus
-                                        />
-                                    </PopoverContent>
-                                </Popover>
-                            </div>
-                        </div>
-                        <DialogFooter>
-                            <DialogClose asChild>
-                                <Button variant="outline">Cancel</Button>
-                            </DialogClose>
-                            <Button onClick={handleAddGoal} disabled={!newGoalTitle || !newGoalDate}>Save Goal</Button>
-                        </DialogFooter>
+                            <DialogFooter>
+                                <DialogClose asChild>
+                                    <Button variant="outline" type="button">Cancel</Button>
+                                </DialogClose>
+                                <Button type="submit" disabled={isPending}>{isPending ? "Saving..." : "Save Goal"}</Button>
+                            </DialogFooter>
+                        </form>
                     </DialogContent>
                 </Dialog>
             </div>
@@ -202,4 +200,20 @@ export default function GoalsPage() {
             </div>
         </div>
     );
+}
+
+// The page itself is now a Server Component responsible for data fetching
+export default async function GoalsPage() {
+    const goalsSnapshot = await firestore.collection('goals').where('userId', '==', 'user_123').orderBy('createdAt', 'desc').get();
+    const initialGoals = goalsSnapshot.docs.map(doc => {
+        const data = doc.data();
+        return {
+            id: doc.id,
+            ...data,
+            dueDate: data.dueDate.toDate(), // Convert Firestore Timestamp to Date
+            createdAt: data.createdAt.toDate(),
+        } as Goal;
+    });
+
+    return <GoalsClientComponent initialGoals={initialGoals} />;
 }
