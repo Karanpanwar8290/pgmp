@@ -17,7 +17,11 @@ import { cn } from '@/lib/utils';
 import { addDays, format, isPast, isToday } from 'date-fns';
 import { addGoal, toggleGoal, type Goal } from './actions';
 import { useToast } from '@/hooks/use-toast';
-import Confetti from 'react-confetti';
+import dynamic from 'next/dynamic';
+import { firestore } from '@/lib/firebase/admin';
+
+const Confetti = dynamic(() => import('react-confetti'), { ssr: false });
+
 
 function GoalCard({ goal, onToggle }: { goal: Goal; onToggle: (id: string, completed: boolean) => void }) {
     const isDue = isPast(goal.dueDate) && !goal.completed && !isToday(goal.dueDate);
@@ -204,6 +208,10 @@ function GoalsClientComponent({ initialGoals }: { initialGoals: Goal[] }) {
 
 // The page itself is now a Server Component responsible for data fetching
 export default async function GoalsPage() {
+    if (!firestore) {
+        return <GoalsClientComponent initialGoals={[]} />;
+    }
+
     const goalsSnapshot = await firestore.collection('goals').where('userId', '==', 'user_123').orderBy('createdAt', 'desc').get();
     const initialGoals = goalsSnapshot.docs.map(doc => {
         const data = doc.data();
