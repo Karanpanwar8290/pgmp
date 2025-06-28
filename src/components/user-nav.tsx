@@ -15,7 +15,6 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
 import Link from "next/link"
-import { ThemeToggle } from "./theme-toggle"
 import { useAuth } from "./auth-provider"
 import type { User } from "firebase/auth"
 
@@ -55,7 +54,6 @@ export function UserNav({ user }: { user: User | null }) {
               <DropdownMenuShortcut>⌘S</DropdownMenuShortcut>
             </Link>
           </DropdownMenuItem>
-          <ThemeToggle />
         </DropdownMenuGroup>
         <DropdownMenuSeparator />
         <DropdownMenuItem onClick={signOut} className="w-full justify-between">

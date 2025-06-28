@@ -5,6 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Rocket, BarChart, HeartPulse, MessageCircle, Bot } from 'lucide-react';
 import { Logo } from '@/components/icons';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { ThemeToggle } from '@/components/theme-toggle';
 
 export default function LandingPage() {
   return (
@@ -15,18 +16,21 @@ export default function LandingPage() {
                 <Logo className="w-8 h-8 text-primary" />
                 <span className="text-xl font-bold font-headline">Wellbeing Navigator</span>
             </Link>
-            <nav className="hidden md:flex items-center gap-2">
-                <Button variant="ghost">Features</Button>
-                <Button variant="ghost">Pricing</Button>
-                <Button variant="ghost">Contact</Button>
-            </nav>
             <div className="flex items-center gap-4">
-                <Button variant="ghost" asChild>
-                    <Link href="/login">Sign In</Link>
-                </Button>
-                <Button asChild>
-                    <Link href="/signup">Get Started</Link>
-                </Button>
+                <nav className="hidden md:flex items-center gap-2">
+                    <Button variant="ghost">Features</Button>
+                    <Button variant="ghost">Pricing</Button>
+                    <Button variant="ghost">Contact</Button>
+                </nav>
+                <div className="flex items-center gap-2">
+                    <ThemeToggle />
+                    <Button variant="ghost" asChild>
+                        <Link href="/login">Sign In</Link>
+                    </Button>
+                    <Button asChild>
+                        <Link href="/signup">Get Started</Link>
+                    </Button>
+                </div>
             </div>
         </div>
       </header>

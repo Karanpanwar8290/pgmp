@@ -26,6 +26,7 @@ import { collection, query, where, orderBy, getDocs } from 'firebase/firestore';
 import type { Goal } from "../goals/types"
 import { useAuth } from '@/components/auth-provider';
 import { Skeleton } from '@/components/ui/skeleton';
+import { ThemeToggle } from '@/components/theme-toggle';
 
 function DashboardSkeleton() {
   return (
@@ -153,6 +154,7 @@ export default function DashboardPage() {
             <CalendarDays className="mr-2 h-4 w-4" />
             This Month
           </Button>
+          <ThemeToggle />
           <UserNav user={user} />
         </div>
       </div>
