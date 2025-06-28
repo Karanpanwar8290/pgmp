@@ -13,7 +13,7 @@ import {
 } from "@/components/ui/tabs"
 import { Button } from "@/components/ui/button"
 import { Activity, BedDouble, BrainCircuit, HeartPulse, CalendarDays } from "lucide-react"
-import { OverviewChart } from "./components/overview-chart"
+import { Goals } from "./components/goals"
 import { Recommendations } from "./components/recommendations"
 import { UserNav } from "@/components/user-nav"
 import { SidebarTrigger } from "@/components/ui/sidebar"
@@ -119,16 +119,8 @@ export default async function DashboardPage() {
             </Card>
           </div>
           <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-7">
-            <Card className="col-span-4">
-              <CardHeader>
-                <CardTitle className="font-headline">Progress Overview</CardTitle>
-                 <CardDescription>Your activity trends for the current month.</CardDescription>
-              </CardHeader>
-              <CardContent className="pl-2">
-                <OverviewChart />
-              </CardContent>
-            </Card>
-            <Card className="col-span-4 lg:col-span-3">
+            <Goals />
+            <Card className="col-span-full lg:col-span-3">
               <CardHeader>
                 <CardTitle className="font-headline">AI Recommendations</CardTitle>
                 <CardDescription>

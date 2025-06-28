@@ -33,17 +33,13 @@ const GenerateResourceRecommendationsOutputSchema = z.object({
     z.object({
       title: z.string().describe('The title of the recommended resource.'),
       description: z.string().describe('A brief description of the resource.'),
-      link: z.string().describe('A URL pointing to the resource.'),
+      link: z.string().url().describe('A URL pointing to the resource.'),
       type: z
-        .enum(['session', 'video', 'article', 'other'])
+        .enum(['session', 'video', 'article', 'news', 'other'])
         .describe('The type of resource.'),
-      relevanceScore: z
-        .number()
-        .min(0)
-        .max(1)
-        .describe('A score indicating the relevance of the resource to the user.'),
+      imageUrl: z.string().url().describe('A URL for a relevant placeholder image for the resource, e.g., from https://placehold.co/600x400.png')
     })
-  ).describe('A list of resources recommended for the user.'),
+  ).describe('A list of at least 12 resources recommended for the user.'),
 });
 
 export type GenerateResourceRecommendationsOutput = z.infer<
@@ -55,16 +51,20 @@ const resourceRecommendationPrompt = ai.definePrompt({
   name: 'resourceRecommendationPrompt',
   input: {schema: GenerateResourceRecommendationsInputSchema},
   output: {schema: GenerateResourceRecommendationsOutputSchema},
-  prompt: `You are an AI assistant designed to provide personalized resource recommendations to users based on their profile, preferences, and goals.
+  prompt: `You are an AI assistant designed to provide a rich and diverse list of personalized resource recommendations to users based on their profile, preferences, and goals.
 
-  Given the following information about the user, generate a list of relevant resources that can help them achieve their wellbeing goals. Include a title, description, link, type, and relevance score for each resource.
+  Given the following information about the user, generate a list of at least 12 relevant resources that can help them achieve their wellbeing goals. 
+  
+  Include a mix of content types: guided audio 'sessions', 'videos', 'articles', and 'news' from reputable health sources like the NHS or WebMD. 
+  
+  For each resource, provide a title, a brief description, a direct link, the resource type, and a relevant placeholder image URL from https://placehold.co/.
 
   User Profile: {{{userProfile}}}
   User Preferences: {{{userPreferences}}}
   User Goals: {{{userGoals}}}
 
-  Format the resources as a JSON array of objects.
-  `, // Removed unneeded Handlebars if/else statements from the prompt
+  Format the output as a valid JSON object.
+  `,
 });
 
 // Define the Genkit flow for generating resource recommendations
