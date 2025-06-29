@@ -50,10 +50,10 @@ export default function LandingPage() {
             <div className="flex items-center gap-4">
                 <ThemeToggle />
                  <Button variant="ghost" asChild>
-                    <Link href="/login">Sign In</Link>
+                    <Link href="/dashboard">Go to App</Link>
                 </Button>
                 <Button asChild>
-                    <Link href="/signup">Get Started</Link>
+                    <Link href="/dashboard">Get Started</Link>
                 </Button>
             </div>
         </div>
@@ -70,7 +70,7 @@ export default function LandingPage() {
                     </p>
                     <div className="flex flex-col sm:flex-row gap-4 justify-center md:justify-start">
                         <Button size="lg" asChild>
-                            <Link href="/signup">Start Your Journey Free</Link>
+                            <Link href="/dashboard">Start Your Journey Free</Link>
                         </Button>
                         <Button size="lg" variant="outline" asChild><Link href="#features">Learn More</Link></Button>
                     </div>
@@ -194,7 +194,7 @@ export default function LandingPage() {
               Join thousands of users on their journey to a healthier and happier life. Get started for free, no credit card required.
             </p>
             <Button size="lg" className="mt-8" asChild>
-                <Link href="/signup">
+                <Link href="/dashboard">
                     <Sparkles className="mr-2 h-5 w-5" />
                     Start Your Free Trial
                 </Link>
