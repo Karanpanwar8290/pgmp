@@ -1,10 +1,12 @@
 'use client';
 
+import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
+import { useRouter, usePathname } from 'next/navigation';
 import type { User } from 'firebase/auth';
-import React, { createContext, useContext } from 'react';
-import { useRouter } from 'next/navigation';
+import { getAuth, onAuthStateChanged, signOut, createUserWithEmailAndPassword, signInWithEmailAndPassword, updateProfile } from 'firebase/auth';
+import { auth as firebaseAuth, isFirebaseEnabled } from '@/lib/firebase/client';
+import { Loader2 } from 'lucide-react';
 
-// Mock user for development without a real login process.
 const mockUser: User = {
   uid: 'mock-user-123',
   email: 'test@example.com',
@@ -23,34 +25,104 @@ const mockUser: User = {
   toJSON: () => ({}),
 };
 
-
 interface AuthContextType {
   user: User | null;
   loading: boolean;
   signOut: () => Promise<void>;
+  signIn: (email: string, pass: string) => Promise<any>;
+  signUp: (email: string, pass: string, name: string) => Promise<any>;
 }
 
-// Create a context with a mock user and disabled loading state.
 const AuthContext = createContext<AuthContextType>({
-  user: mockUser,
-  loading: false,
+  user: null,
+  loading: true,
   signOut: async () => {},
+  signIn: async () => {},
+  signUp: async () => {},
 });
 
-export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
-  const router = useRouter();
+const FullScreenLoader = () => (
+  <div className="flex h-screen w-full items-center justify-center bg-background">
+    <Loader2 className="h-8 w-8 animate-spin" />
+  </div>
+);
 
-  // The value provided to the context consumers.
+export const AuthProvider = ({ children }: { children: ReactNode }) => {
+  const router = useRouter();
+  const pathname = usePathname();
+  const [user, setUser] = useState<User | null>(null);
+  const [loading, setLoading] = useState(true);
+
+  // If Firebase is disabled, use a mock provider
+  if (!isFirebaseEnabled()) {
+    const mockValue = {
+      user: mockUser,
+      loading: false,
+      signOut: async () => { console.log("Sign out in mock mode."); router.push('/'); },
+      signIn: async () => { console.log("Sign in in mock mode."); },
+      signUp: async () => { console.log("Sign up in mock mode."); },
+    };
+
+    return (
+      <AuthContext.Provider value={mockValue}>
+        {children}
+      </AuthContext.Provider>
+    );
+  }
+
+  // --- Real Firebase Auth Provider Logic ---
+
+  useEffect(() => {
+    const auth = getAuth();
+    const unsubscribe = onAuthStateChanged(auth, (user) => {
+      setUser(user);
+      setLoading(false);
+    });
+    return () => unsubscribe();
+  }, []);
+
+  useEffect(() => {
+    if (loading) return;
+
+    const isAuthPage = pathname === '/login' || pathname === '/signup';
+
+    // If user is not logged in and not on an auth page, redirect to login.
+    if (!user && !isAuthPage && pathname !== '/') {
+      router.push('/login');
+    }
+    // If user is logged in and on an auth page, redirect to dashboard.
+    else if (user && isAuthPage) {
+      router.push('/dashboard');
+    }
+  }, [user, loading, pathname, router]);
+
+
   const value = {
-    user: mockUser,
-    loading: false, // Always false as we are not fetching any auth state.
-    signOut: async () => {
-      // In a real app, this would sign the user out.
-      // Here, we can just log it and redirect to a conceptual "login" page.
-      console.log("Sign out clicked. Authentication is currently disabled.");
-      router.push('/'); // Redirect to the root, which will then redirect to dashboard.
+    user,
+    loading,
+    signIn: (email: string, pass: string) => signInWithEmailAndPassword(firebaseAuth!, email, pass),
+    signUp: async (email: string, pass: string, name: string) => {
+      const userCredential = await createUserWithEmailAndPassword(firebaseAuth!, email, pass);
+      if (userCredential.user) {
+        await updateProfile(userCredential.user, { displayName: name });
+      }
+      return userCredential;
+    },
+    signOut: () => {
+      return signOut(firebaseAuth!).then(() => {
+        router.push('/');
+      });
     },
   };
+
+  if (loading) {
+    return <FullScreenLoader />;
+  }
+  
+  const isAuthPage = pathname === '/login' || pathname === '/signup';
+  if (!user && !isAuthPage && pathname !== '/') {
+    return <FullScreenLoader />;
+  }
 
   return (
     <AuthContext.Provider value={value}>
@@ -58,6 +130,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     </AuthContext.Provider>
   );
 };
+
 
 export const useAuth = () => {
   const context = useContext(AuthContext);

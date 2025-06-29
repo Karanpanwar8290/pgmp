@@ -64,11 +64,10 @@ export async function sendMessage({ chatId, userId, message, history }: { chatId
     // If Firestore isn't configured, we can't save the chat.
     // We'll return a temporary response so the UI can still function for the current session.
     if (!firestore) {
-        console.error("sendMessage: Firestore is not configured. Chat conversation will not be saved.");
-        const isNewChat = !chatId;
+        console.warn("sendMessage: Firestore is not configured. Chat conversation will not be saved.");
         return {
-            chatId: isNewChat ? 'unsaved-chat' : chatId,
-            title: isNewChat ? 'Unsaved Chat' : '', 
+            chatId: null, // Indicate that this chat is not saved
+            title: 'Ephemeral Chat', 
             aiResponse: modelMessage,
         };
     }
@@ -96,6 +95,10 @@ export async function sendMessage({ chatId, userId, message, history }: { chatId
     });
     
     revalidatePath('/chat');
+    if (chatId) { // Only revalidate the specific chat page if it's an existing one
+        revalidatePath(`/chat/${chatId}`);
+    }
+
 
     return {
         chatId: currentChatId!,
@@ -110,9 +113,7 @@ export async function sendMessage({ chatId, userId, message, history }: { chatId
 export async function deleteChat(chatId: string, userId: string) {
     if (!firestore) {
         console.error("deleteChat: Firestore is not configured. Cannot delete from database.");
-        // Since the chat was never saved, we can consider this a "success" from the client's perspective
-        // as it will allow the UI to remove the ephemeral chat from its list.
-        return { success: true };
+        return { success: false, error: 'Database not configured.' };
     }
 
     const chatRef = firestore.collection('chats').doc(chatId);

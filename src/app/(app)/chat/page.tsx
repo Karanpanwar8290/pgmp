@@ -10,9 +10,10 @@ import { Input } from "@/components/ui/input";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { SidebarTrigger } from '@/components/ui/sidebar';
-import { Bot, PlusCircle, SendHorizonal, Sparkles, Trash2, X } from 'lucide-react';
+import { Bot, PlusCircle, SendHorizonal, Sparkles, Trash2, X, DatabaseZap, History } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { Skeleton } from '@/components/ui/skeleton';
+import { isFirebaseEnabled } from '@/lib/firebase/client';
 
 export default function ChatPage() {
   const { user } = useAuth();
@@ -23,10 +24,11 @@ export default function ChatPage() {
   const [activeChatId, setActiveChatId] = useState<string | null>(null);
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState('');
-  const [isLoading, setIsLoading] = useState(false); // For AI response loading state
+  const [isLoading, setIsLoading] = useState(false);
   const [isListLoading, setIsListLoading] = useState(true);
   const [isChatLoading, setIsChatLoading] = useState(false);
-
+  
+  const isDbConnected = isFirebaseEnabled();
   const scrollAreaRef = useRef<HTMLDivElement>(null);
 
   const scrollToBottom = useCallback(() => {
@@ -42,25 +44,29 @@ export default function ChatPage() {
     scrollToBottom();
   }, [messages, isLoading, scrollToBottom]);
 
+  // Fetch chat list only if DB is connected and user is available
   useEffect(() => {
-    if (user) {
+    if (user && isDbConnected) {
       setIsListLoading(true);
       getChatList(user.uid).then((list) => {
         setChatList(list);
+      }).finally(() => {
         setIsListLoading(false);
       });
+    } else {
+      setIsListLoading(false);
     }
-  }, [user]);
+  }, [user, isDbConnected]);
 
   const handleSelectChat = useCallback(async (chatId: string) => {
-    if (activeChatId === chatId || chatId === 'unsaved-chat') return;
+    if (activeChatId === chatId || !isDbConnected) return;
     setIsChatLoading(true);
     setActiveChatId(chatId);
     setMessages([]);
     const chat = await getChat(chatId, user!.uid);
     setMessages(chat?.messages || []);
     setIsChatLoading(false);
-  }, [activeChatId, user]);
+  }, [activeChatId, user, isDbConnected]);
 
   const handleNewChat = () => {
     setActiveChatId(null);
@@ -69,7 +75,7 @@ export default function ChatPage() {
   };
 
   const handleDeleteChat = (chatId: string) => {
-    if (!user) return;
+    if (!user || !isDbConnected) return;
     startTransition(async () => {
         const result = await deleteChat(chatId, user.uid);
         if (result.success) {
@@ -106,12 +112,10 @@ export default function ChatPage() {
 
         setMessages(prev => [...prev, result.aiResponse]);
 
-        if (!activeChatId) { // It was a new chat
+        // If it was a new chat and DB is connected, it now has an ID.
+        if (!activeChatId && result.chatId) {
             setActiveChatId(result.chatId);
-            // Add the new (potentially unsaved) chat to the list
-            if (result.chatId) {
-              setChatList(prev => [{ id: result.chatId!, title: result.title }, ...prev]);
-            }
+            setChatList(prev => [{ id: result.chatId!, title: result.title }, ...prev]);
         }
     } catch (error) {
         console.error("Error sending message:", error);
@@ -122,7 +126,7 @@ export default function ChatPage() {
     }
   };
   
-  const activeChatTitle = chatList.find(c => c.id === activeChatId)?.title || "New Chat";
+  const activeChatTitle = (isDbConnected && chatList.find(c => c.id === activeChatId)?.title) || "New Conversation";
 
   return (
     <div className="flex h-full border rounded-lg overflow-hidden">
@@ -133,13 +137,19 @@ export default function ChatPage() {
             <div className="md:hidden"> <SidebarTrigger /> </div>
             <h2 className="text-lg font-semibold font-headline">Conversations</h2>
           </div>
-          <Button onClick={handleNewChat} size="icon" variant="ghost">
+          <Button onClick={handleNewChat} size="icon" variant="ghost" disabled={!isDbConnected && !!activeChatId}>
             <PlusCircle className="h-5 w-5" />
           </Button>
         </div>
         <ScrollArea className="flex-1">
           <div className="p-2 space-y-1">
-            {isListLoading ? (
+            {!isDbConnected ? (
+                <div className="p-4 text-center text-sm text-muted-foreground space-y-2">
+                    <DatabaseZap className="mx-auto h-8 w-8 text-amber-500" />
+                    <p className="font-semibold">Database Not Connected</p>
+                    <p>Chat history is disabled. Your conversations will not be saved.</p>
+                </div>
+            ) : isListLoading ? (
                 Array.from({length: 5}).map((_, i) => <Skeleton key={i} className="h-9 w-full rounded-md" />)
             ) : chatList.length > 0 ? (
               chatList.map(chat => (
@@ -165,6 +175,7 @@ export default function ChatPage() {
               ))
             ) : (
                 <div className="p-4 text-center text-sm text-muted-foreground">
+                    <History className="mx-auto h-8 w-8 mb-2" />
                     No conversations yet.
                 </div>
             )}

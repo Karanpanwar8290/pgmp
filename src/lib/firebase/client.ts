@@ -15,6 +15,7 @@ const firebaseConfig = {
 let app: FirebaseApp | undefined;
 let auth: Auth | undefined;
 let firestore: Firestore | undefined;
+let firebaseEnabled = false;
 
 // Check if all necessary client-side Firebase environment variables are set
 if (firebaseConfig.apiKey && firebaseConfig.projectId) {
@@ -23,6 +24,7 @@ if (firebaseConfig.apiKey && firebaseConfig.projectId) {
     app = !getApps().length ? initializeApp(firebaseConfig) : getApp();
     auth = getAuth(app);
     firestore = getFirestore(app);
+    firebaseEnabled = true;
   } catch (e) {
     console.error("Firebase initialization error:", e);
     // Log helpful message for the user.
@@ -59,5 +61,10 @@ if (firebaseConfig.apiKey && firebaseConfig.projectId) {
     `);
 }
 
+/**
+ * A function that returns whether Firebase is correctly configured and enabled.
+ * @returns {boolean} True if Firebase is enabled, false otherwise.
+ */
+export const isFirebaseEnabled = () => firebaseEnabled;
 
 export { app, auth, firestore };

@@ -6,9 +6,9 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/com
 import { Button } from "@/components/ui/button";
 import { SidebarTrigger } from "@/components/ui/sidebar";
 import { Progress } from "@/components/ui/progress";
-import { Award, Target, Zap, Trophy, ShieldQuestion, Loader2 } from "lucide-react";
+import { Award, Target, Zap, Trophy, ShieldQuestion, DatabaseZap } from "lucide-react";
 import Link from "next/link";
-import { firestore } from '@/lib/firebase/client';
+import { firestore, isFirebaseEnabled } from '@/lib/firebase/client';
 import { collection, query, where, getDocs } from 'firebase/firestore';
 import type { Goal } from "../goals/types";
 import { useAuth } from '@/components/auth-provider';
@@ -77,9 +77,10 @@ export default function ProfilePage() {
     const { user } = useAuth();
     const [completedGoals, setCompletedGoals] = useState<Goal[]>([]);
     const [loading, setLoading] = useState(true);
+    const isDbConnected = isFirebaseEnabled();
 
     useEffect(() => {
-        if (user) {
+        if (user && isDbConnected) {
             const fetchCompletedGoals = async () => {
                 if (!firestore) {
                     setLoading(false);
@@ -100,10 +101,10 @@ export default function ProfilePage() {
                 }
             };
             fetchCompletedGoals();
-        } else if (user === null) {
+        } else {
             setLoading(false);
         }
-    }, [user]);
+    }, [user, isDbConnected]);
 
     if (loading) {
         return <ProfileSkeleton />;
@@ -178,7 +179,7 @@ export default function ProfilePage() {
                     <CardDescription>Milestones you've unlocked on your journey.</CardDescription>
                 </CardHeader>
                 <CardContent className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-                    {completedGoals.map((goal) => (
+                    {isDbConnected && completedGoals.map((goal) => (
                          <div key={goal.id} className="flex flex-col items-center text-center p-4 bg-secondary rounded-lg">
                             <Trophy className="w-10 h-10 text-primary mb-2"/>
                             <p className="font-semibold text-sm">{goal.title}</p>
@@ -192,11 +193,21 @@ export default function ProfilePage() {
                             <p className="text-xs text-muted-foreground">{ach.description}</p>
                         </div>
                     ))}
-                     {completedGoals.length === 0 && (
+                     {(!isDbConnected || completedGoals.length === 0) && (
                          <div className="col-span-full flex flex-col items-center text-center p-4 bg-secondary/50 rounded-lg">
-                            <ShieldQuestion className="w-10 h-10 text-muted-foreground mb-2"/>
-                            <p className="font-semibold text-sm">No goals completed yet</p>
-                            <p className="text-xs text-muted-foreground">Complete a goal to see it here!</p>
+                            {isDbConnected ? (
+                                <>
+                                    <ShieldQuestion className="w-10 h-10 text-muted-foreground mb-2"/>
+                                    <p className="font-semibold text-sm">No goals completed yet</p>
+                                    <p className="text-xs text-muted-foreground">Complete a goal to see it here!</p>
+                                </>
+                            ) : (
+                                 <>
+                                    <DatabaseZap className="w-10 h-10 text-muted-foreground mb-2"/>
+                                    <p className="font-semibold text-sm">Database Not Connected</p>
+                                    <p className="text-xs text-muted-foreground">Completed goals cannot be loaded.</p>
+                                </>
+                            )}
                         </div>
                      )}
                 </CardContent>

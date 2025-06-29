@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { firestore } from '@/lib/firebase/client';
+import { firestore, isFirebaseEnabled } from '@/lib/firebase/client';
 import { collection, query, where, orderBy, getDocs } from 'firebase/firestore';
 import type { Goal } from './types';
 import GoalsClientComponent from './components/goals-client';
@@ -55,7 +55,7 @@ export default function GoalsPage() {
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
-        if (user) {
+        if (user && isFirebaseEnabled()) {
             const fetchGoals = async () => {
                 if (!firestore) {
                     setLoading(false);
@@ -86,8 +86,8 @@ export default function GoalsPage() {
                 }
             };
             fetchGoals();
-        } else if (user === null) {
-            // User is not logged in
+        } else {
+            // No user or Firebase disabled, so don't fetch.
             setLoading(false);
         }
     }, [user]);

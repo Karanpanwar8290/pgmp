@@ -11,7 +11,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import { CalendarIcon, Clock, PlusCircle, Target, Trophy } from "lucide-react";
+import { CalendarIcon, Clock, PlusCircle, Target, Trophy, DatabaseZap } from "lucide-react";
 import { Calendar } from "@/components/ui/calendar";
 import { cn } from '@/lib/utils';
 import { addDays, format, isPast, isToday } from 'date-fns';
@@ -21,6 +21,8 @@ import { useToast } from '@/hooks/use-toast';
 import dynamic from 'next/dynamic';
 import { useAuth } from '@/components/auth-provider';
 import { useRouter } from 'next/navigation';
+import { isFirebaseEnabled } from '@/lib/firebase/client';
+import { Alert, AlertTitle, AlertDescription } from '@/components/ui/alert';
 
 const Confetti = dynamic(() => import('react-confetti'), { ssr: false });
 
@@ -88,6 +90,7 @@ export default function GoalsClientComponent({ initialGoals }: { initialGoals: G
     const { toast } = useToast();
     let [isPending, startTransition] = useTransition();
     const [date, setDate] = React.useState<Date | undefined>(addDays(new Date(), 7));
+    const isDbConnected = isFirebaseEnabled();
 
 
     const handleToggleGoal = async (id: string, currentStatus: boolean) => {
@@ -161,7 +164,7 @@ export default function GoalsClientComponent({ initialGoals }: { initialGoals: G
                 </div>
                  <Dialog open={open} onOpenChange={setOpen}>
                     <DialogTrigger asChild>
-                         <Button>
+                         <Button disabled={!isDbConnected}>
                             <PlusCircle className="mr-2 h-4 w-4" />
                             Create Goal
                         </Button>
@@ -216,6 +219,16 @@ export default function GoalsClientComponent({ initialGoals }: { initialGoals: G
                     </DialogContent>
                 </Dialog>
             </div>
+            
+            {!isDbConnected && (
+                 <Alert variant="default" className="bg-amber-500/10 border-amber-500/50 text-amber-700 dark:text-amber-400">
+                    <DatabaseZap className="h-4 w-4 !text-amber-500" />
+                    <AlertTitle>Database Not Connected</AlertTitle>
+                    <AlertDescription>
+                        Goals cannot be saved or loaded. Please configure your Firebase environment variables to enable this feature.
+                    </AlertDescription>
+                </Alert>
+            )}
 
             <div className="space-y-6">
                 <div>
