@@ -5,7 +5,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { SidebarTrigger } from "@/components/ui/sidebar";
-import { SendHorizonal, Bot, Sparkles } from 'lucide-react';
+import { SendHorizonal, Bot, Sparkles, Trash2 } from 'lucide-react';
 import { chat } from '@/ai/flows/chat';
 import { cn } from '@/lib/utils';
 import { ScrollArea } from '@/components/ui/scroll-area';
@@ -15,11 +15,39 @@ type Message = {
   content: string;
 };
 
+const CHAT_HISTORY_KEY = 'wellbeing-chat-history';
+
 export default function ChatPage() {
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const scrollAreaRef = useRef<HTMLDivElement>(null);
+
+  // Load chat history from localStorage on initial render
+  useEffect(() => {
+    try {
+      const storedMessages = window.localStorage.getItem(CHAT_HISTORY_KEY);
+      if (storedMessages) {
+        setMessages(JSON.parse(storedMessages));
+      }
+    } catch (error) {
+        console.error("Failed to load chat history from localStorage", error);
+    }
+  }, []);
+
+  // Save chat history to localStorage whenever messages change
+  useEffect(() => {
+    try {
+      if (messages.length > 0) {
+        window.localStorage.setItem(CHAT_HISTORY_KEY, JSON.stringify(messages));
+      } else {
+        window.localStorage.removeItem(CHAT_HISTORY_KEY);
+      }
+    } catch (error) {
+        console.error("Failed to save chat history to localStorage", error);
+    }
+  }, [messages]);
+
 
   const scrollToBottom = () => {
     if (scrollAreaRef.current) {
@@ -62,6 +90,11 @@ export default function ChatPage() {
     }
   };
 
+  const handleClearHistory = () => {
+    setMessages([]);
+    window.localStorage.removeItem(CHAT_HISTORY_KEY);
+  };
+
   return (
     <div className="flex flex-col h-full">
       <header className="flex items-center justify-between p-4 border-b">
@@ -74,6 +107,15 @@ export default function ChatPage() {
                 <p className="text-muted-foreground">Your personal guide to a healthier you.</p>
             </div>
         </div>
+        <Button 
+            variant="outline" 
+            size="icon" 
+            onClick={handleClearHistory} 
+            disabled={messages.length === 0 || isLoading}
+            aria-label="Clear chat history"
+        >
+          <Trash2 className="h-4 w-4" />
+        </Button>
       </header>
       <main className="flex-1 flex flex-col overflow-hidden">
           <ScrollArea className="flex-1" ref={scrollAreaRef}>
