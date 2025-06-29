@@ -85,9 +85,10 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     if (loading) return;
 
     const isAuthPage = pathname === '/login' || pathname === '/signup';
+    const isLandingPage = pathname === '/';
 
-    // If user is not logged in and not on an auth page, redirect to login.
-    if (!user && !isAuthPage && pathname !== '/') {
+    // If user is not logged in and not on an allowed public page, redirect to login.
+    if (!user && !isAuthPage && !isLandingPage) {
       router.push('/login');
     }
     // If user is logged in and on an auth page, redirect to dashboard.
@@ -120,7 +121,9 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   }
   
   const isAuthPage = pathname === '/login' || pathname === '/signup';
-  if (!user && !isAuthPage && pathname !== '/') {
+  const isLandingPage = pathname === '/';
+  // While loading, or if trying to access protected page while logged out, show loader
+  if (!user && !isAuthPage && !isLandingPage) {
     return <FullScreenLoader />;
   }
 
