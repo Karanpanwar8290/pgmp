@@ -14,8 +14,7 @@ import {
   TabsList,
   TabsTrigger,
 } from "@/components/ui/tabs"
-import { Button } from "@/components/ui/button"
-import { Activity, BedDouble, BrainCircuit, HeartPulse, CalendarDays, Loader2 } from "lucide-react"
+import { Activity, BedDouble, BrainCircuit, HeartPulse } from "lucide-react"
 import { Goals } from "./components/goals"
 import { Recommendations } from "./components/recommendations"
 import { UserNav } from "@/components/user-nav"
@@ -150,10 +149,6 @@ export default function DashboardPage() {
             </div>
         </div>
         <div className="hidden items-center space-x-2 md:flex">
-          <Button>
-            <CalendarDays className="mr-2 h-4 w-4" />
-            This Month
-          </Button>
           <ThemeToggle />
           <UserNav user={user} />
         </div>
