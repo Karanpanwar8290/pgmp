@@ -33,7 +33,7 @@ if (firebaseConfig.apiKey && firebaseConfig.projectId) {
       !!! FIREBASE CLIENT-SIDE INITIALIZATION FAILED !!!
       ----------------------------------------------------------------
       This is likely due to incorrect or missing Firebase credentials.
-      Please check your '.env.local' file and ensure the following
+      Please check your '.env' file and ensure the following
       environment variables are set correctly:
 
       NEXT_PUBLIC_FIREBASE_API_KEY="..."
@@ -55,7 +55,7 @@ if (firebaseConfig.apiKey && firebaseConfig.projectId) {
       ----------------------------------------------------------------
       Your Firebase client-side configuration is missing or incomplete.
       Authentication and database features will be disabled.
-      Please create a '.env.local' file in the root of your project
+      Please open the '.env' file in the root of your project
       and add the necessary Firebase environment variables.
       ----------------------------------------------------------------
     `);
