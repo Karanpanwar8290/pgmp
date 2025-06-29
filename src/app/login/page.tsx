@@ -14,8 +14,8 @@ import Link from 'next/link';
 import { Logo } from '@/components/icons';
 
 export default function LoginPage() {
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
+  const [email, setEmail] = useState('test@example.com');
+  const [password, setPassword] = useState('password');
   const [isLoading, setIsLoading] = useState(false);
   const router = useRouter();
   const { toast } = useToast();
@@ -25,7 +25,7 @@ export default function LoginPage() {
     if (!auth) {
         toast({
             title: "Firebase Not Configured",
-            description: "Authentication is disabled. Please check the console for setup instructions.",
+            description: "Authentication is disabled. Please check your console for setup instructions.",
             variant: "destructive",
         });
         return;
@@ -38,7 +38,7 @@ export default function LoginPage() {
     } catch (error: any) {
       toast({
         title: "Login Failed",
-        description: error.message,
+        description: "Hint: Have you signed up with this email and password yet?",
         variant: "destructive",
       });
     } finally {
