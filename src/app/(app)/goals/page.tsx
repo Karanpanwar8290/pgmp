@@ -7,6 +7,7 @@ import type { Goal } from './types';
 import GoalsClientComponent from './components/goals-client';
 import { useAuth } from '@/components/auth-provider';
 import { Skeleton } from '@/components/ui/skeleton';
+import { Card, CardHeader, CardContent } from '@/components/ui/card';
 
 function GoalsPageSkeleton() {
     return (
