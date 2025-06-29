@@ -27,10 +27,13 @@ import { UserProfile } from '@/components/user-profile';
 import { Separator } from '@/components/ui/separator';
 import { UserNav } from '@/components/user-nav';
 import { useAuth } from '@/components/auth-provider';
+import { cn } from '@/lib/utils';
 
 export default function AppLayout({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
   const { user } = useAuth();
+  
+  const isChatPage = pathname === '/chat';
 
   return (
     <SidebarProvider>
@@ -111,7 +114,10 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
           <UserProfile user={user} />
         </SidebarFooter>
       </Sidebar>
-      <SidebarInset className="flex flex-col h-screen overflow-hidden">
+      <SidebarInset className={cn(
+        "flex flex-col h-screen overflow-hidden",
+        isChatPage && "p-2" // Add padding around the chat page container
+      )}>
         {children}
       </SidebarInset>
     </SidebarProvider>
