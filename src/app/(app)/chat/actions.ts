@@ -54,8 +54,26 @@ export async function getChat(chatId: string, userId: string) {
  * Handles sending a message, creating a new chat if necessary.
  */
 export async function sendMessage({ chatId, userId, message, history }: { chatId: string | null; userId: string; message: string; history: Message[] }) {
-    if (!firestore) throw new Error("Database not configured.");
+    // We'll always need the AI response, so let's get it first.
+    const aiResponseContent = await callChatApi({
+        history: history,
+        message: message,
+    });
+    const modelMessage: Message = { role: 'model', content: aiResponseContent };
 
+    // If Firestore isn't configured, we can't save the chat.
+    // We'll return a temporary response so the UI can still function for the current session.
+    if (!firestore) {
+        console.error("sendMessage: Firestore is not configured. Chat conversation will not be saved.");
+        const isNewChat = !chatId;
+        return {
+            chatId: isNewChat ? 'unsaved-chat' : chatId,
+            title: isNewChat ? 'Unsaved Chat' : '', 
+            aiResponse: modelMessage,
+        };
+    }
+
+    // --- Logic for when Firestore IS configured ---
     const userMessage: Message = { role: 'user', content: message };
     let currentChatId = chatId;
     let newTitle = '';
@@ -72,13 +90,6 @@ export async function sendMessage({ chatId, userId, message, history }: { chatId
         currentChatId = chatRef.id;
     }
 
-    // Call the AI with the conversation history
-    const aiResponseContent = await callChatApi({
-        history: history,
-        message: message,
-    });
-    const modelMessage: Message = { role: 'model', content: aiResponseContent };
-
     // Append new messages to the document
     await firestore.collection('chats').doc(currentChatId).update({
         messages: FieldValue.arrayUnion(userMessage, modelMessage)
@@ -87,7 +98,7 @@ export async function sendMessage({ chatId, userId, message, history }: { chatId
     revalidatePath('/chat');
 
     return {
-        chatId: currentChatId,
+        chatId: currentChatId!,
         title: newTitle, // Will be empty if it's an existing chat
         aiResponse: modelMessage,
     };
@@ -97,7 +108,12 @@ export async function sendMessage({ chatId, userId, message, history }: { chatId
  * Deletes a chat session.
  */
 export async function deleteChat(chatId: string, userId: string) {
-    if (!firestore) throw new Error("Database not configured.");
+    if (!firestore) {
+        console.error("deleteChat: Firestore is not configured. Cannot delete from database.");
+        // Since the chat was never saved, we can consider this a "success" from the client's perspective
+        // as it will allow the UI to remove the ephemeral chat from its list.
+        return { success: true };
+    }
 
     const chatRef = firestore.collection('chats').doc(chatId);
     const doc = await chatRef.get();

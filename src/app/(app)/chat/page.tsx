@@ -53,7 +53,7 @@ export default function ChatPage() {
   }, [user]);
 
   const handleSelectChat = useCallback(async (chatId: string) => {
-    if (activeChatId === chatId) return;
+    if (activeChatId === chatId || chatId === 'unsaved-chat') return;
     setIsChatLoading(true);
     setActiveChatId(chatId);
     setMessages([]);
@@ -71,11 +71,15 @@ export default function ChatPage() {
   const handleDeleteChat = (chatId: string) => {
     if (!user) return;
     startTransition(async () => {
-        await deleteChat(chatId, user.uid);
-        toast({ title: "Chat deleted" });
-        setChatList(prev => prev.filter(c => c.id !== chatId));
-        if (activeChatId === chatId) {
-            handleNewChat();
+        const result = await deleteChat(chatId, user.uid);
+        if (result.success) {
+          toast({ title: "Chat deleted" });
+          setChatList(prev => prev.filter(c => c.id !== chatId));
+          if (activeChatId === chatId) {
+              handleNewChat();
+          }
+        } else {
+          toast({ title: "Error", description: result.error, variant: 'destructive' });
         }
     });
   };
@@ -104,7 +108,10 @@ export default function ChatPage() {
 
         if (!activeChatId) { // It was a new chat
             setActiveChatId(result.chatId);
-            setChatList(prev => [{ id: result.chatId, title: result.title }, ...prev]);
+            // Add the new (potentially unsaved) chat to the list
+            if (result.chatId) {
+              setChatList(prev => [{ id: result.chatId!, title: result.title }, ...prev]);
+            }
         }
     } catch (error) {
         console.error("Error sending message:", error);
