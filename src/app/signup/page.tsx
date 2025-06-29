@@ -9,9 +9,11 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useToast } from '@/hooks/use-toast';
-import { Loader2 } from 'lucide-react';
+import { Loader2, Terminal } from 'lucide-react';
 import Link from 'next/link';
 import { Logo } from '@/components/icons';
+import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
+import { cn } from '@/lib/utils';
 
 export default function SignupPage() {
   const [name, setName] = useState('');
@@ -20,15 +22,11 @@ export default function SignupPage() {
   const [isLoading, setIsLoading] = useState(false);
   const router = useRouter();
   const { toast } = useToast();
+  const isFirebaseConfigured = !!auth;
 
   const handleSignup = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!auth) {
-        toast({
-            title: "Firebase Not Configured",
-            description: "Authentication is disabled. Please check the console for setup instructions.",
-            variant: "destructive",
-        });
+    if (!isFirebaseConfigured) {
         return;
     }
     setIsLoading(true);
@@ -65,6 +63,15 @@ export default function SignupPage() {
           <CardDescription>Enter your details below to get started</CardDescription>
         </CardHeader>
         <CardContent>
+          {!isFirebaseConfigured && (
+            <Alert variant="destructive" className="mb-4">
+              <Terminal className="h-4 w-4" />
+              <AlertTitle>Firebase Not Configured</AlertTitle>
+              <AlertDescription>
+                Account creation is disabled. Please check the browser console for instructions on setting up your project credentials.
+              </AlertDescription>
+            </Alert>
+          )}
           <form onSubmit={handleSignup} className="grid gap-4">
              <div className="grid gap-2">
               <Label htmlFor="name">Name</Label>
@@ -75,7 +82,7 @@ export default function SignupPage() {
                 required
                 value={name}
                 onChange={(e) => setName(e.target.value)}
-                disabled={isLoading}
+                disabled={isLoading || !isFirebaseConfigured}
               />
             </div>
             <div className="grid gap-2">
@@ -87,7 +94,7 @@ export default function SignupPage() {
                 required
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                disabled={isLoading}
+                disabled={isLoading || !isFirebaseConfigured}
               />
             </div>
             <div className="grid gap-2">
@@ -98,17 +105,17 @@ export default function SignupPage() {
                 required
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
-                disabled={isLoading}
+                disabled={isLoading || !isFirebaseConfigured}
                 minLength={6}
               />
             </div>
-            <Button type="submit" className="w-full" disabled={isLoading}>
+            <Button type="submit" className="w-full" disabled={isLoading || !isFirebaseConfigured}>
               {isLoading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : "Create Account"}
             </Button>
           </form>
            <div className="mt-4 text-center text-sm">
             Already have an account?{" "}
-            <Link href="/login" className="underline">
+            <Link href="/login" className={cn("underline", !isFirebaseConfigured && "pointer-events-none opacity-50")}>
               Login
             </Link>
           </div>

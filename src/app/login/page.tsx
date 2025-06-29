@@ -9,9 +9,11 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useToast } from '@/hooks/use-toast';
-import { Loader2 } from 'lucide-react';
+import { Loader2, Terminal } from 'lucide-react';
 import Link from 'next/link';
 import { Logo } from '@/components/icons';
+import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
+import { cn } from '@/lib/utils';
 
 export default function LoginPage() {
   const [email, setEmail] = useState('test@example.com');
@@ -19,16 +21,13 @@ export default function LoginPage() {
   const [isLoading, setIsLoading] = useState(false);
   const router = useRouter();
   const { toast } = useToast();
+  const isFirebaseConfigured = !!auth;
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!auth) {
-        toast({
-            title: "Firebase Not Configured",
-            description: "Authentication is disabled. Please check your console for setup instructions.",
-            variant: "destructive",
-        });
-        return;
+    if (!isFirebaseConfigured) {
+      // The form is disabled, but this is a safeguard.
+      return;
     }
     setIsLoading(true);
     try {
@@ -57,6 +56,15 @@ export default function LoginPage() {
           <CardDescription>Enter your credentials to access your account</CardDescription>
         </CardHeader>
         <CardContent>
+          {!isFirebaseConfigured && (
+            <Alert variant="destructive" className="mb-4">
+              <Terminal className="h-4 w-4" />
+              <AlertTitle>Firebase Not Configured</AlertTitle>
+              <AlertDescription>
+                Authentication is disabled. Please check the browser console for instructions on setting up your project credentials.
+              </AlertDescription>
+            </Alert>
+          )}
           <form onSubmit={handleLogin} className="grid gap-4">
             <div className="grid gap-2">
               <Label htmlFor="email">Email</Label>
@@ -67,7 +75,7 @@ export default function LoginPage() {
                 required
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                disabled={isLoading}
+                disabled={isLoading || !isFirebaseConfigured}
               />
             </div>
             <div className="grid gap-2">
@@ -78,16 +86,16 @@ export default function LoginPage() {
                 required
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
-                disabled={isLoading}
+                disabled={isLoading || !isFirebaseConfigured}
               />
             </div>
-            <Button type="submit" className="w-full" disabled={isLoading}>
+            <Button type="submit" className="w-full" disabled={isLoading || !isFirebaseConfigured}>
               {isLoading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : "Login"}
             </Button>
           </form>
            <div className="mt-4 text-center text-sm">
             Don&apos;t have an account?{" "}
-            <Link href="/signup" className="underline">
+            <Link href="/signup" className={cn("underline", !isFirebaseConfigured && "pointer-events-none opacity-50")}>
               Sign up
             </Link>
           </div>
